@@ -74,4 +74,29 @@ describe('ThemeRenderer', () => {
     await screen.findByTestId('brutalist-theme');
     expect(screen.getByRole('button', { name: /switch design/i })).toBeInTheDocument();
   });
+
+  it('removes the outgoing view from the document instead of leaving it mounted', async () => {
+    const user = userEvent.setup();
+    render(
+      <ThemeProvider>
+        <ThemeRenderer />
+      </ThemeProvider>
+    );
+
+    await user.click(screen.getByText('pick apple'));
+    await screen.findByTestId('apple-theme');
+
+    await user.click(screen.getByRole('button', { name: /switch design/i }));
+    await screen.findByText('pick brutalist');
+    // The apple view must be gone, not just hidden — a lingering
+    // opacity:0 copy would still be focusable and exposed to assistive
+    // technology, and would accumulate on every switch.
+    expect(screen.queryByTestId('apple-theme')).not.toBeInTheDocument();
+
+    await user.click(screen.getByText('pick brutalist'));
+    await screen.findByTestId('brutalist-theme');
+    expect(screen.queryByText('pick apple')).not.toBeInTheDocument();
+    expect(screen.queryByText('pick brutalist')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('apple-theme')).not.toBeInTheDocument();
+  });
 });
