@@ -60,8 +60,9 @@ so content only needs to be written a single time.
   `Card_Brutalist`, `Card_Terminal`, each with theme-appropriate materials
   — frosted glass, cobalt/black brutalist edges, glowing CRT-green grid —
   and a mouse-hover tilt interaction authored in Spline). Embedded via
-  `@splinetool/react-spline`; a click handler reads the clicked object's
-  name from the Spline event target to trigger theme selection, then
+  `@splinetool/react-spline`; the scene's `onSplineMouseDown` handler
+  receives a `SplineEvent` (`{ target: { name, id } }`) and reads the
+  clicked object's name to trigger theme selection, then
   drives the zoom/transition and theme switch from React (not from a
   CSS-variable swap alone — see theming approach above, which this
   transition hands off into).
@@ -183,7 +184,9 @@ Each theme's components render this same data; only presentation differs.
   scene hosted at a Spline-provided URL; the scene should be exported/self
   -hosted rather than relying on Spline's free-tier hosting limits if the
   site gets meaningful traffic. Spline's exposed interaction API (reading
-  clicked-object names via the `onMouseDown` event target) is the
+  clicked-object names from the `SplineEvent` passed to
+  `onSplineMouseDown` — note this is NOT the DOM `onMouseDown` prop, whose
+  event target is an HTML element with no object name) is the
   integration point with React — the site's click/theme-switch logic and
   the full-screen theme swap remain hand-coded in React, only the 3D scene
   itself is authored visually.

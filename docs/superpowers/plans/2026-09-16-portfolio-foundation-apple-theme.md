@@ -767,10 +767,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('@splinetool/react-spline', () => ({
-  default: ({ onMouseDown }: { onMouseDown: (e: { target: { name: string } }) => void }) => (
+  default: ({ onSplineMouseDown }: { onSplineMouseDown: (e: SplineEvent) => void }) => (
     <div
       data-testid="mock-spline"
-      onMouseDown={() => onMouseDown({ target: { name: 'Card_Brutalist' } })}
+      onMouseDown={() => onSplineMouseDown({ target: { name: 'Card_Brutalist', id: 'x' } })}
     />
   ),
 }));
@@ -801,6 +801,7 @@ Create `components/picker/SplinePicker.tsx`:
 'use client';
 
 import Spline from '@splinetool/react-spline';
+import type { SplineEvent } from '@splinetool/react-spline';
 import type { ThemeId } from '@/lib/theme-context';
 
 const OBJECT_NAME_TO_THEME: Record<string, ThemeId> = {
@@ -816,7 +817,7 @@ export function SplinePicker({
   sceneUrl: string;
   onSelectTheme: (id: ThemeId) => void;
 }) {
-  function handleMouseDown(e: { target: { name: string } }) {
+  function handleSplineMouseDown(e: SplineEvent) {
     const theme = OBJECT_NAME_TO_THEME[e.target.name];
     if (theme) {
       onSelectTheme(theme);
@@ -825,7 +826,7 @@ export function SplinePicker({
 
   return (
     <div className="relative h-screen w-full">
-      <Spline scene={sceneUrl} onMouseDown={handleMouseDown} />
+      <Spline scene={sceneUrl} onSplineMouseDown={handleSplineMouseDown} />
     </div>
   );
 }
@@ -1587,16 +1588,23 @@ git commit -m "feat: add Apple theme testimonials section"
 - [ ] **Step 1: Write the failing test**
 
 Create `app/api/contact/route.test.ts`. This mocks the `resend` package
-so no real network call happens:
+so no real network call happens. The mock implementation must be a
+regular `function`, not an arrow function: the route calls
+`new Resend(...)`, Vitest's spy forwards that through
+`Reflect.construct`, and arrow functions are not constructible — an
+arrow here fails with "is not a constructor" no matter what the route
+does. Keep `sendMock` dereferenced inside the function body; hoisting it
+into a class declaration outside the factory hits a temporal-dead-zone
+error instead, because `vi.mock` factories are hoisted.
 
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const sendMock = vi.fn();
 vi.mock('resend', () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: { send: sendMock },
-  })),
+  Resend: vi.fn(function () {
+    return { emails: { send: sendMock } };
+  }),
 }));
 
 import { POST } from './route';
@@ -1679,7 +1687,17 @@ function validate(payload: Partial<ContactPayload>): string | null {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const payload = (await request.json()) as Partial<ContactPayload>;
+  let payload: Partial<ContactPayload>;
+  try {
+    const parsed: unknown = await request.json();
+    if (typeof parsed !== 'object' || parsed === null) {
+      return Response.json({ error: 'Invalid request body.' }, { status: 400 });
+    }
+    payload = parsed as Partial<ContactPayload>;
+  } catch {
+    return Response.json({ error: 'Invalid request body.' }, { status: 400 });
+  }
+
   const validationError = validate(payload);
   if (validationError) {
     return Response.json({ error: validationError }, { status: 400 });
