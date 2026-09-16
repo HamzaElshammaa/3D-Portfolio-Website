@@ -10,7 +10,20 @@ export function ThemeRenderer() {
   const ActiveTheme = activeTheme ? themeRegistry[activeTheme] : null;
 
   return (
-    <AnimatePresence mode="wait">
+    // mode="sync" (the default) is intentional: the incoming child mounts
+    // immediately instead of waiting for the outgoing child's exit animation
+    // to signal completion. AnimatePresence's mode="wait" makes every future
+    // switch depend on that exit-complete callback firing — and that signal
+    // is driven by the Web Animations API's `finished` promise, which
+    // browsers can defer indefinitely while the tab is backgrounded/hidden
+    // (verified directly: a raw `Element.animate().finished` promise did not
+    // resolve after 1s with `document.hidden === true`). With mode="wait",
+    // if a visitor switches tabs during the 0.4s transition, the picker (or
+    // the next theme) never mounts and the switcher becomes permanently
+    // unresponsive. Keeping the default mode means the new content is always
+    // interactive right away; the old content simply finishes its fade-out
+    // whenever the browser gets around to running it.
+    <AnimatePresence>
       {activeTheme === null ? (
         <motion.div
           key="picker"
