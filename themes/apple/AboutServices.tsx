@@ -2,9 +2,11 @@ import type { SiteContent, ServiceItem } from '@/content/site-content';
 
 export function AppleAboutServices({
   about,
+  servicesHeading,
   services,
 }: {
   about: SiteContent['about'];
+  servicesHeading: string;
   services: ServiceItem[];
 }) {
   return (
@@ -20,7 +22,7 @@ export function AppleAboutServices({
         </div>
       </section>
       <section id="services" className="w-full bg-white px-6 py-24">
-        <h2 className="mb-12 text-center text-3xl font-semibold text-[#1D1D1F]">Services</h2>
+        <h2 className="mb-12 text-center text-3xl font-semibold text-[#1D1D1F]">{servicesHeading}</h2>
         <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-3">
           {services.map((service) => (
             <div key={service.title} className="rounded-2xl border border-[#E5E5EA] p-6">

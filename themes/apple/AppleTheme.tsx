@@ -9,13 +9,17 @@ import { AppleContact } from './Contact';
 export function AppleTheme() {
   return (
     <div className="w-full">
-      <AppleNav />
+      <AppleNav wordmark={content.site.wordmark} links={content.nav} />
       <AppleHero hero={content.hero} />
-      <AppleWork projects={content.projects} />
-      <AppleAboutServices about={content.about} services={content.services} />
+      <AppleWork projects={content.projects} heading={content.workHeading} />
+      <AppleAboutServices
+        about={content.about}
+        servicesHeading={content.servicesHeading}
+        services={content.services}
+      />
       <AppleTestimonials testimonials={content.testimonials} />
       <AppleContact contact={content.contact} />
-      <AppleFooter socials={content.contact.socials} />
+      <AppleFooter socials={content.contact.socials} copyrightNotice={content.site.copyrightNotice} />
     </div>
   );
 }

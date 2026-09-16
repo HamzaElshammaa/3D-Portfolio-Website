@@ -6,10 +6,11 @@ const about = { narrative: 'I ship polished products fast.', skills: ['React', '
 const services = [{ title: 'Landing Pages', description: 'Fast marketing sites.' }];
 
 describe('AppleAboutServices', () => {
-  it('renders the narrative, skills, and services', () => {
-    render(<AppleAboutServices about={about} services={services} />);
+  it('renders the narrative, skills, services heading, and services', () => {
+    render(<AppleAboutServices about={about} servicesHeading="Services" services={services} />);
     expect(screen.getByText(about.narrative)).toBeInTheDocument();
     expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Services' })).toBeInTheDocument();
     expect(screen.getByText('Landing Pages')).toBeInTheDocument();
     expect(screen.getByText('Fast marketing sites.')).toBeInTheDocument();
   });
