@@ -1,9 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-
-vi.mock('@/lib/theme-context', () => ({
-  useTheme: () => ({ activeTheme: 'apple', selectTheme: vi.fn(), reopenPicker: vi.fn() }),
-}));
 
 import { AppleTheme } from './AppleTheme';
 import { content } from '@/content/site-content';
