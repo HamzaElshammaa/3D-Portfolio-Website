@@ -1,126 +1,167 @@
 # Freelance Portfolio Website — Design Spec
 
-Date: 2026-09-16
+Date: 2026-09-16 (revised)
 
 ## Purpose
 
 A single-page portfolio site to attract freelance clients by showcasing
 frontend development work (websites and mobile apps, with room to expand
 into AI agents/other work later). The site must visually "wow" visitors —
-looking like the polished, modern products the visitor would be hiring the
-owner to build — not just list projects in a generic template.
+proving design/implementation range interactively rather than just listing
+projects in a template.
 
-## Direction: "Live Product Showcase"
+## Concept: "Pick Your Design Language"
 
-Rejected two earlier draft design systems (an acid-lime/brutalist system and
-a soft frosted-glass "Luminous Obsidian" system) in favor of a new direction
-built specifically for this use case: project work is displayed as if it
-were actually running (browser-chrome frames for websites, phone frames for
-mobile apps), on a dark, confident, restrained canvas with a single accent
-color and purposeful motion — evoking the Vercel/Linear/Framer class of
-product polish, since that reads as "premium software" to prospective
-clients.
+The site opens on a 3D scene of floating cards, each a live preview of a
+distinct, complete design language. Clicking a card zooms it to fill the
+viewport, and the entire site — not just the hero — reveals itself rendered
+in that design language: colors, typography, layout, components, and
+motion all change. A persistent control lets a visitor switch design
+language at any point later in their visit. This directly demonstrates the
+owner's range across visual styles, which is the core sales pitch of the
+site.
+
+This supersedes an earlier single-theme "Live Product Showcase" plan (dark
+canvas, one accent color) — abandoned in favor of this multi-theme concept,
+which better fits the goal of demonstrating design versatility.
+
+### The three design languages
+
+Working set (exact final choice may still change, but implementation should
+proceed against this set unless revised):
+
+1. **Apple-clean** — minimal, light, generous whitespace, soft rounded
+   corners, restrained neutral palette with a single accent, system-style
+   sans typography (e.g. SF Pro–adjacent / Inter). Calm, premium, consumer
+   product feel.
+2. **Kinetic Editorial Brutalism** — reuses the existing draft in
+   [Design.nd.txt](../../../Design.nd.txt): acid lime (`#CCFF00`) on
+   carbon black (`#0F0F11`) and bone cream (`#E9F1DF`), zero-radius,
+   hairline-bordered broadsheet grid, massive Syne display type, Space
+   Grotesk body/labels. Aggressive, editorial, high-contrast.
+3. **Terminal** — dark, monospace-led (e.g. JetBrains Mono / Fira Code
+   throughout, not just labels), command-line/IDE motifs (blinking cursor,
+   ASCII/box-drawing borders, syntax-highlight color accents), single-column
+   or terminal-window framed layout. Technical, engineer-forward.
+
+Each theme has its own full set of section components (Hero, Work, About,
+Services, Testimonials, Contact, Nav/switcher) — not a CSS-variable-only
+skin — because the three languages differ in layout and interaction, not
+just palette. All three read from one shared content data source (project
+list, about copy, services copy, testimonials, contact info) authored once,
+so content only needs to be written a single time.
 
 ## Tech Stack
 
 - **Framework:** Next.js (App Router) + React + TypeScript
-- **Styling:** Tailwind CSS
-- **Motion:** Framer Motion — scroll-triggered reveals, hover
-  tilt/magnetic effects on project cards, smooth anchor-scroll navigation
+- **Styling:** Tailwind CSS, with per-theme token/config sets
+- **3D intro scene:** React Three Fiber (Three.js) for the floating-card
+  picker, with hover depth/parallax and a zoom-into-card transition on
+  click
+- **Fallback picker:** a CSS/2D version of the same card-pick concept and
+  zoom transition for mobile and low-end/low-power devices (feature-detect
+  WebGL support and reduced-motion preference; fall back accordingly)
+- **Motion:** Framer Motion for section reveals, hover effects, and the
+  cross-fade/transition when switching between theme component trees
 - **Contact form backend:** Next.js API route + an email-sending service
   (e.g. Resend) to deliver submissions to the owner's inbox
 - **Deployment:** Vercel
-- **Theme:** dark-only (no light/dark toggle)
 
-## Visual System
+## Theme Switching Behavior
 
-### Colors
-- Canvas/background: near-black, e.g. `#0A0A0C`
-- Primary text: off-white, e.g. `#F2F2F0`
-- Secondary text / borders: muted gray, e.g. `#8A8A90` / low-opacity white
-- Accent: electric blue, e.g. `#3B82F6` — used sparingly for links, active
-  states, key CTAs, focus/glow rings, and a subtle gradient-mesh backdrop
-  behind the hero. Never used as a large background fill.
+- Every visit (including return visits) starts at the card-pick intro —
+  no persistence of a prior choice. Consistency of the wow-moment takes
+  priority over skipping it for returning visitors.
+- Once a theme is chosen, a small floating control (fixed position,
+  unobtrusive) remains available across the whole site to reopen the
+  picker and switch to a different design language at any time.
+- Switching themes cross-fades/transitions from one full component tree to
+  another, preserving the visitor's approximate scroll position/section
+  context where practical.
 
-### Typography
-- Display/heading font: a geometric sans (e.g. Inter Tight, General Sans,
-  or Space Grotesk) — confident, modern, not brutalist-scale
-- Monospace accent font: JetBrains Mono — used for labels/metadata only
-  (e.g. `PROJECT 01`, tech-stack tags, timestamps), giving a technical edge
-  without going full brutalist
+## Content Model (shared across all three themes)
 
-### Shape & Depth
-- Soft-but-restrained corner radius (~0.5–1rem) — not zero-radius brutalist,
-  not full-pill rounded
-- Glassy surfaces: low-opacity blurred cards for panels/overlays
-- Soft ambient glows (radial, low-opacity accent color) behind key elements
-  (hero, featured project) rather than hard shadows or hard color inversion
+A single data source (e.g. structured TS/JSON) drives all themes:
 
-### Motion
-- Scroll-reveal fade/slide-in for sections and cards
-- Tilt/magnetic hover effect on project cards
-- Smooth scroll for anchor nav links
-- Optional subtle cursor-follow glow, gated behind a performance budget
-  (disable on reduced-motion preference and on low-end/mobile devices)
+- **Projects** (3–5 at launch): name, short outcome-led description, tech
+  stack tags, live link, screenshots/video — supplied by the owner
+- **About copy:** outcome/value-led narrative (speed, polish, reliability,
+  business impact), plus a supporting skills list
+- **Services:** offerings (e.g. landing pages, web apps, mobile apps) and
+  engagement model (project-based/hourly) — copy to be finalized with the
+  owner
+- **Testimonials:** 2–3 entries, placeholder quotes/names for now,
+  structured so real testimonials can be swapped in later
+- **Contact destinations:** email, mailto link, Calendly (or similar)
+  link, social links
 
-## Page Structure (single-page scroller)
+Each theme's components render this same data; only presentation differs.
 
-1. **Nav** — fixed/sticky; logo or name; anchor links to Work, About,
-   Services, Contact; background blur/opacity increases on scroll.
-2. **Hero** — outcome/value-led headline (e.g. "I build fast, polished web
-   & mobile products"); short subhead; primary CTA ("View Work") and
-   secondary CTA ("Get in touch"); ambient gradient-mesh/glow backdrop.
-3. **Work** — 3–5 featured projects (real assets, to be supplied by the
-   owner). Each project renders inside a device frame: browser-chrome frame
-   for web projects, phone frame for mobile projects. Includes a short
-   outcome-led tagline, tech-stack tags (mono labels), and a link to the
-   live site/store listing. Tilt-on-hover interaction.
-4. **About** — outcome/value-led narrative (speed, polish, reliability,
-   business impact) as the lead; technical skills shown as a supporting
-   tag/grid below the narrative, not as the headline framing. No resume/CV
-   download.
-5. **Services** — what's offered (e.g. landing pages, web apps, mobile
-   apps) and how engagement works (project-based/hourly) — copy to be
-   finalized with the owner.
-6. **Testimonials** — 2–3 quote cards using placeholder client
-   quotes/names, structured so real testimonials can be swapped in later
-   without layout changes.
-7. **Contact** — a form (name, email, message) posting to a Next.js API
-   route that emails the owner, alongside direct alternatives: mailto
-   link, Calendly (or similar) link, and social links.
-8. **Footer** — minimal: social links, copyright, back-to-top control.
+## Page Structure (per theme, single-page scroller)
+
+1. **Nav / floating switcher** — theme-specific styling, but consistent
+   role: anchor links (Work, About, Services, Contact) + a control to
+   reopen the design-language picker.
+2. **Hero** — outcome-led headline/subhead + primary/secondary CTAs,
+   styled per theme (e.g. Apple: calm centered layout; Brutalism: massive
+   broadsheet numerals; Terminal: boot-sequence/prompt-style intro).
+3. **Work** — 3–5 projects, presented per theme (e.g. Apple: soft device
+   frames with subtle shadow; Brutalism: bordered index-style rows with
+   tabular numerals; Terminal: file-listing/directory-style entries),
+   each linking to the live project.
+4. **About** — value-led narrative + skills, styled per theme.
+5. **Services** — offerings + engagement model, styled per theme.
+6. **Testimonials** — placeholder quote cards, styled per theme.
+7. **Contact** — form (name/email/message → API route → email) + direct
+   mailto/Calendly/social links, styled per theme.
+8. **Footer** — minimal, styled per theme.
 
 ## Content Requirements (owner to supply before/during implementation)
 
-- 3–5 real projects: name, short description/outcome, tech stack, live
-  link, and screenshots or short video/gif for each (web and/or mobile)
+- Final decision (or confirmation) on the three design languages
+- 3–5 real projects: name, description/outcome, tech stack, live link,
+  screenshots or short video/gif
 - Final hero headline/subhead copy (value-led)
 - About section narrative copy
 - Services list and engagement copy
-- Contact destinations: email address, Calendly/booking link (if any),
-  social links
+- Contact destinations: email, Calendly/booking link (if any), social
+  links
 - Email-sending service credentials for the contact form (e.g. Resend API
-  key) — to be added as an environment variable, never committed
+  key) — added as an environment variable, never committed
 
 ## Testing / Verification Plan
 
-- Component-level: verify each section renders correctly with both real
-  and placeholder content (particularly Work cards and Testimonials, which
-  must support empty/placeholder states)
-- Responsive check: mobile, tablet, desktop breakpoints for every section,
-  including device-frame scaling and bottom-to-top stacking
-- Motion check: verify scroll-reveal and hover effects work, and that
-  `prefers-reduced-motion` disables/reduces non-essential animation
-- Contact form: verify successful submission delivers an email, and that
-  validation/error states are handled (required fields, invalid email)
-- Manual browser check of the golden path (land on hero → scroll through
-  all sections → submit contact form) before considering the build done,
-  per this project's UI-verification requirement
+- Verify the 3D picker (hover, click, zoom transition) on a WebGL-capable
+  desktop browser, and verify the CSS/2D fallback triggers correctly on
+  mobile and when WebGL/`prefers-reduced-motion` conditions call for it
+- Verify all 7 sections render correctly under all three themes, with both
+  real and placeholder content (Work and Testimonials must support
+  placeholder states)
+- Responsive check per theme: mobile, tablet, desktop breakpoints,
+  including 3D/2D picker scaling
+- Verify the floating switcher correctly re-opens the picker and that
+  switching themes mid-scroll transitions cleanly without breaking layout
+  or losing scroll context
+- Contact form: verify successful submission delivers an email per theme,
+  and that validation/error states are handled
+- Manual browser check of the golden path (land on picker → pick each of
+  the 3 themes in turn → scroll through all sections → switch theme
+  mid-page → submit contact form) before considering the build done
 
 ## Out of Scope (for this iteration)
 
-- Light/dark theme toggle
-- Dedicated case-study sub-pages per project (may be a future iteration)
-- AI agents / non-frontend work categories (explicitly planned as a later
-  expansion, not part of this build)
+- Persisting a visitor's theme choice across visits
+- Light/dark toggle within a theme (each theme has one fixed mode)
+- Dedicated case-study sub-pages per project
+- AI agents / non-frontend work categories (planned as a later expansion)
 - Resume/CV download
+
+## Risks / Notes
+
+- This concept roughly triples section-building work versus a single-theme
+  site (3 themes × ~7 sections), plus the 3D scene and transition system —
+  scope and timeline should account for this.
+- The 3D scene and zoom transition must be genuinely smooth to land as
+  impressive rather than gimmicky; performance budgets and the fallback
+  path are not optional polish, they're required for the concept to work
+  across the range of visitor devices.
