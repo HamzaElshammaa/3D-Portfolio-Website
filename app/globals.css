@@ -5,6 +5,18 @@
   --foreground: #171717;
 }
 
+/*
+ * Every theme's nav is fixed to the top of the viewport, which would
+ * otherwise hide a jumped-to section's heading behind it. scroll-padding-top
+ * on the scroll container applies to any in-page anchor jump (nav links, CTA
+ * hrefs like #work) regardless of which theme is active, so each theme only
+ * needs to keep this in sync with its own nav height instead of annotating
+ * every section individually.
+ */
+html {
+  scroll-padding-top: 4rem;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
