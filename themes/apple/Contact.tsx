@@ -16,13 +16,17 @@ export function AppleContact({ contact }: { contact: SiteContent['contact'] }) {
       message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
     };
     setStatus('sending');
-    const response = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    setStatus(response.ok ? 'sent' : 'error');
-    if (response.ok) form.reset();
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      setStatus(response.ok ? 'sent' : 'error');
+      if (response.ok) form.reset();
+    } catch {
+      setStatus('error');
+    }
   }
 
   return (
@@ -55,11 +59,22 @@ export function AppleContact({ contact }: { contact: SiteContent['contact'] }) {
           <a href={`mailto:${contact.email}`} className="hover:text-[#0071E3]">
             Email me directly
           </a>
-          <a href={contact.calendlyUrl} className="hover:text-[#0071E3]">
+          <a
+            href={contact.calendlyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-[#0071E3]"
+          >
             Book a call
           </a>
           {contact.socials.map((social) => (
-            <a key={social.label} href={social.url} className="hover:text-[#0071E3]">
+            <a
+              key={social.label}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#0071E3]"
+            >
               {social.label}
             </a>
           ))}

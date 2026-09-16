@@ -44,4 +44,17 @@ describe('AppleContact', () => {
     );
     await waitFor(() => expect(screen.getByText(/thanks/i)).toBeInTheDocument());
   });
+
+  it('shows an error and re-enables the button when the network request rejects', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('network down'));
+    const user = userEvent.setup();
+    render(<AppleContact contact={contact} />);
+    await user.type(screen.getByLabelText(/name/i), 'Jane');
+    await user.type(screen.getByLabelText(/^email$/i), 'jane@example.com');
+    await user.type(screen.getByLabelText(/message/i), 'Hello there');
+    await user.click(screen.getByRole('button', { name: /send/i }));
+
+    await waitFor(() => expect(screen.getByText(/something went wrong/i)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /send/i })).not.toBeDisabled();
+  });
 });
