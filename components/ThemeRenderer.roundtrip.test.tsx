@@ -5,10 +5,10 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from '@/lib/theme-context';
 import { ThemeRenderer } from './ThemeRenderer';
 
-// The real PickerGate calls usePrefersReducedMotion, which reads
+// The real ThemeRenderer calls usePrefersReducedMotion, which reads
 // window.matchMedia. jsdom doesn't implement it, so stub it for this
-// real-wiring test (no scene URL is configured, so PickerGate always
-// resolves to the 2D fallback regardless of this value).
+// real-wiring test (no scene URL is configured, so choosePickerVariant
+// always resolves to the 2D fallback regardless of this value).
 beforeAll(() => {
   window.matchMedia =
     window.matchMedia ||
@@ -24,7 +24,7 @@ beforeAll(() => {
     }) as unknown as MediaQueryList);
 });
 
-describe('ThemeRenderer round trip (real ThemeProvider, real registry, real PickerGate)', () => {
+describe('ThemeRenderer round trip (real ThemeProvider, real registry, real TwoDFlow)', () => {
   it('lets the visitor reopen the picker and pick again, repeatedly (no wedge after the first switch)', async () => {
     const user = userEvent.setup();
     render(

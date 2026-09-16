@@ -1,55 +1,31 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useTheme } from '@/lib/theme-context';
-import { themeRegistry } from '@/themes/registry';
-import { PickerGate } from './picker/PickerGate';
-import { FloatingSwitcher } from './FloatingSwitcher';
+import { choosePickerVariant, useWebGLSupported, usePrefersReducedMotion } from '@/lib/device-support';
+import { TwoDFlow } from './TwoDFlow';
+import { SplineFlow } from './spline/SplineFlow';
 
+/**
+ * Top-level split between the two picker/site architectures. The decision
+ * of *which* variant to use is entirely `choosePickerVariant`'s (untouched,
+ * well-tested) — this component only reads the device signals it needs and
+ * mounts the matching flow. `SplineFlow` and `TwoDFlow` are otherwise
+ * independent: the Spline flow keeps a persistent 3D layer alive under a
+ * phase machine, the 2D flow instantly cross-fades between two component
+ * trees the way this app always has.
+ */
 export function ThemeRenderer() {
-  const { activeTheme, selectTheme } = useTheme();
-  const ActiveTheme = activeTheme ? themeRegistry[activeTheme] : null;
+  const hasWebGL = useWebGLSupported();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const sceneUrl = process.env.NEXT_PUBLIC_SPLINE_SCENE_URL ?? '';
 
-  return (
-    <>
-      {/*
-       * Do not reintroduce AnimatePresence or an `exit` prop here. The WAAPI
-       * `finished` promise an exit animation depends on does not resolve
-       * while the tab is hidden/backgrounded, which can wedge the switcher
-       * or leave outgoing views mounted (invisible, but still in the tab
-       * order and accessibility tree) indefinitely. A plain keyed
-       * `motion.div` with only `initial`/`animate` sidesteps this: React's
-       * normal reconciliation removes the outgoing subtree synchronously
-       * when `activeTheme` changes, so correctness never depends on an
-       * animation completing. We keep the entrance transition and drop the
-       * exit fade.
-       */}
-      {activeTheme === null ? (
-        <motion.div
-          key="picker"
-          initial={{ opacity: 0, scale: 1.02 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <PickerGate onSelectTheme={selectTheme} />
-        </motion.div>
-      ) : (
-        <motion.div
-          key={activeTheme}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          {ActiveTheme ? <ActiveTheme /> : null}
-        </motion.div>
-      )}
-      {/*
-       * The switcher is app chrome, not theme content: it must appear once
-       * a theme is active regardless of which theme (including future
-       * themes that are just a ComingSoon placeholder), and it must not
-       * appear over the picker itself.
-       */}
-      {activeTheme !== null && <FloatingSwitcher />}
-    </>
-  );
+  const variant = choosePickerVariant({
+    hasWebGL,
+    prefersReducedMotion,
+    hasSceneUrl: Boolean(sceneUrl),
+  });
+
+  if (variant === 'spline') {
+    return <SplineFlow sceneUrl={sceneUrl} />;
+  }
+  return <TwoDFlow />;
 }
