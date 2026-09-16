@@ -72,10 +72,9 @@ components/
     CardPicker2D.tsx         # CSS/2D fallback picker
     SplinePicker.tsx          # Spline embed + click->theme mapping
 themes/
-  registry.ts               # theme id -> component set
+  registry.tsx              # theme id -> component set
   ComingSoon.tsx             # shared placeholder for unbuilt themes
   apple/
-    tokens.ts                # palette/type/spacing constants
     NavFooter.tsx
     Hero.tsx
     Work.tsx
@@ -105,12 +104,16 @@ tests/
 - [ ] **Step 1: Scaffold Next.js app**
 
 ```bash
-npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias "@/*" --no-turbopack --use-npm
+npx create-next-app@latest . --yes --typescript --tailwind --eslint --app --src-dir=false --import-alias "@/*" --no-turbopack --use-npm
 ```
 
-When prompted, accept defaults. This creates `package.json`,
-`tsconfig.json`, `tailwind.config.ts`, `app/layout.tsx`, `app/page.tsx`,
-`app/globals.css`.
+`--yes` accepts defaults for any prompt the explicit flags do not cover,
+so the command never blocks waiting on input. This creates
+`package.json`, `tsconfig.json`, `app/layout.tsx`, `app/page.tsx`,
+`app/globals.css`, and Tailwind wiring. The installed Tailwind may be v4
+(CSS-first, no `tailwind.config.ts`) or v3 (with a config file) — either
+is fine, because every theme in this project styles with literal
+arbitrary values (e.g. `bg-[#FAFAFA]`), which both versions support.
 
 - [ ] **Step 2: Install additional dependencies**
 
@@ -126,16 +129,29 @@ Create `vitest.config.ts`:
 ```typescript
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./', import.meta.url)),
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
+    passWithNoTests: true,
   },
 });
 ```
+
+The `@` alias must mirror the `@/*` path mapping create-next-app wrote
+into `tsconfig.json` — later tasks' tests import through `@/lib/...`,
+`@/content/...` and `@/themes/...`, and without this alias Vitest cannot
+resolve them. `passWithNoTests` lets Step 7 verify the runner before any
+test file exists.
 
 Create `vitest.setup.ts`:
 
@@ -162,19 +178,30 @@ CONTACT_TO_EMAIL=
 NEXT_PUBLIC_SPLINE_SCENE_URL=
 ```
 
-- [ ] **Step 6: Verify dev server runs**
+- [ ] **Step 6: Ignore the controller scratch directory**
+
+Append to `.gitignore` (create-next-app generated it; do not remove its
+existing entries):
+
+```
+# superpowers controller scratch
+.superpowers/
+```
+
+- [ ] **Step 7: Verify dev server runs**
 
 Run: `npm run dev`
 Expected: server starts on `http://localhost:3000` without errors; stop
 it with Ctrl+C once confirmed.
 
-- [ ] **Step 7: Verify test runner works**
+- [ ] **Step 8: Verify test runner works**
 
 Run: `npm test`
-Expected: passes with "No test files found" (or 0 tests) — confirms
-Vitest is wired correctly before any tests exist.
+Expected: exits 0 reporting "No test files found" — `passWithNoTests`
+makes this a pass, confirming Vitest is wired correctly before any tests
+exist.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add -A
@@ -1069,71 +1096,12 @@ git commit -m "feat: add coming-soon placeholder for unbuilt themes"
 
 ---
 
-### Task 10: Apple theme tokens
+### Task 10: REMOVED (pre-flight ruling)
 
-**Files:**
-- Create: `themes/apple/tokens.ts`
-- Test: `themes/apple/tokens.test.ts`
-
-**Interfaces:**
-- Produces: `appleTokens: { colors: {...}; fontHeading: string; fontBody: string }`
-  used by every Apple theme component for consistent styling values passed
-  into Tailwind arbitrary values/class names.
-
-- [ ] **Step 1: Write the failing test**
-
-Create `themes/apple/tokens.test.ts`:
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import { appleTokens } from './tokens';
-
-describe('appleTokens', () => {
-  it('defines the required color and font keys', () => {
-    expect(appleTokens.colors.background).toBeTruthy();
-    expect(appleTokens.colors.text).toBeTruthy();
-    expect(appleTokens.colors.accent).toBeTruthy();
-    expect(appleTokens.fontHeading).toBeTruthy();
-    expect(appleTokens.fontBody).toBeTruthy();
-  });
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `npm test -- themes/apple/tokens.test.ts`
-Expected: FAIL with "Cannot find module './tokens'"
-
-- [ ] **Step 3: Implement**
-
-Create `themes/apple/tokens.ts`:
-
-```typescript
-export const appleTokens = {
-  colors: {
-    background: '#FAFAFA',
-    surface: '#FFFFFF',
-    text: '#1D1D1F',
-    textMuted: '#6E6E73',
-    accent: '#0071E3',
-    border: '#E5E5EA',
-  },
-  fontHeading: 'font-sans',
-  fontBody: 'font-sans',
-} as const;
-```
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `npm test -- themes/apple/tokens.test.ts`
-Expected: PASS (1 test)
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add themes/apple/tokens.ts themes/apple/tokens.test.ts
-git commit -m "feat: add Apple theme design tokens"
-```
+The Apple theme tokens module was dropped before execution: no consumer
+imported it and its test asserted only key-existence. Tasks 11-17 carry
+complete literal color values, which is the form Tailwind arbitrary
+values require. Task numbering keeps this gap deliberately.
 
 ---
 
@@ -1144,7 +1112,10 @@ git commit -m "feat: add Apple theme design tokens"
 - Test: `themes/apple/NavFooter.test.tsx`
 
 **Interfaces:**
-- Consumes: `appleTokens`.
+- Consumes: nothing from earlier tasks — colors are literal values in the
+  code below (`#1D1D1F` text, `#0071E3` accent, `#E5E5EA` border,
+  `#6E6E73` muted, `#FAFAFA` canvas), the same palette every other Apple
+  task uses.
 - Produces: `AppleNav()` and `AppleFooter({ socials }: { socials: { label: string; url: string }[] })`.
 
 - [ ] **Step 1: Write the failing test**
@@ -1418,7 +1389,7 @@ export function AppleWork({ projects }: { projects: Project[] }) {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npm test -- themes/apple/Work.test.tsx`
-Expected: PASS (2 tests)
+Expected: PASS (1 test)
 
 - [ ] **Step 5: Commit**
 
@@ -1993,12 +1964,14 @@ git commit -m "feat: assemble full Apple theme page"
 ### Task 19: Theme registry
 
 **Files:**
-- Create: `themes/registry.ts`
+- Create: `themes/registry.tsx`
 - Test: `themes/registry.test.tsx`
 
 **Interfaces:**
 - Consumes: `ThemeId`, `AppleTheme`, `ComingSoon`.
-- Produces: `themeRegistry: Record<ThemeId, () => JSX.Element>`.
+- Produces: `themeRegistry: Record<ThemeId, () => ReactElement>` — each
+  entry is a component, rendered by consumers as `<Entry />`, never called
+  as `Entry()`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2033,6 +2006,12 @@ describe('themeRegistry', () => {
     render(<BrutalistEntry />);
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
   });
+
+  it('renders a coming-soon placeholder for "terminal"', () => {
+    const TerminalEntry = themeRegistry.terminal;
+    render(<TerminalEntry />);
+    expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
+  });
 });
 ```
 
@@ -2043,29 +2022,35 @@ Expected: FAIL with "Cannot find module './registry'"
 
 - [ ] **Step 3: Implement**
 
-Create `themes/registry.ts`:
+Create `themes/registry.tsx`:
 
 ```tsx
+import type { ReactElement } from 'react';
 import type { ThemeId } from '@/lib/theme-context';
 import { AppleTheme } from './apple/AppleTheme';
 import { ComingSoon } from './ComingSoon';
 
-export const themeRegistry: Record<ThemeId, () => JSX.Element> = {
+export const themeRegistry: Record<ThemeId, () => ReactElement> = {
   apple: AppleTheme,
-  brutalist: () => ComingSoon({ themeLabel: 'Brutalist' }),
-  terminal: () => ComingSoon({ themeLabel: 'Terminal' }),
+  brutalist: () => <ComingSoon themeLabel="Brutalist" />,
+  terminal: () => <ComingSoon themeLabel="Terminal" />,
 };
 ```
+
+The file is `.tsx` because the placeholder entries render JSX. Entries
+are components, so consumers render them as `<Entry />` — calling a
+component as a plain function inlines its hooks into the caller's hook
+order.
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npm test -- themes/registry.test.tsx`
-Expected: PASS (3 tests)
+Expected: PASS (4 tests)
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add themes/registry.ts themes/registry.test.tsx
+git add themes/registry.tsx themes/registry.test.tsx
 git commit -m "feat: add theme registry mapping theme ids to component trees"
 ```
 
@@ -2149,6 +2134,7 @@ import { PickerGate } from './picker/PickerGate';
 
 export function ThemeRenderer() {
   const { activeTheme, selectTheme } = useTheme();
+  const ActiveTheme = activeTheme ? themeRegistry[activeTheme] : null;
 
   return (
     <AnimatePresence mode="wait">
@@ -2170,7 +2156,7 @@ export function ThemeRenderer() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {themeRegistry[activeTheme]()}
+          {ActiveTheme ? <ActiveTheme /> : null}
         </motion.div>
       )}
     </AnimatePresence>
