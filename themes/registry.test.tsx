@@ -1,9 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-vi.mock('@/lib/theme-context', () => ({
-  useTheme: () => ({ activeTheme: 'apple', selectTheme: vi.fn(), reopenPicker: vi.fn() }),
-}));
+vi.mock('@/lib/theme-context', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/theme-context')>();
+  return {
+    ...actual,
+    useTheme: () => ({ activeTheme: 'apple', selectTheme: vi.fn(), reopenPicker: vi.fn() }),
+  };
+});
 
 import { themeRegistry } from './registry';
 import { content } from '@/content/site-content';

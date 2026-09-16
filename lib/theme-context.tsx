@@ -5,6 +5,39 @@ import type { ReactNode } from 'react';
 
 export type ThemeId = 'apple' | 'brutalist' | 'terminal';
 
+export interface ThemeDescriptor {
+  label: string;
+  description: string;
+  /** The Spline object name (from the picker scene) that selects this theme. */
+  splineObjectName: string;
+}
+
+/**
+ * The single source of truth for "what design languages exist". Keying by
+ * `ThemeId` gives exhaustiveness for free — adding a fourth theme means
+ * extending `ThemeId` above, which then fails to compile here (and at every
+ * consumer below) until this record is updated too.
+ */
+export const THEMES: Record<ThemeId, ThemeDescriptor> = {
+  apple: {
+    label: 'Apple-clean',
+    description: 'Minimal. Calm. Premium.',
+    splineObjectName: 'Card_Apple',
+  },
+  brutalist: {
+    label: 'Brutalist',
+    description: 'Bold. Editorial. Uncompromising.',
+    splineObjectName: 'Card_Brutalist',
+  },
+  terminal: {
+    label: 'Terminal',
+    description: 'Technical. Precise. Engineered.',
+    splineObjectName: 'Card_Terminal',
+  },
+};
+
+export const THEME_IDS = Object.keys(THEMES) as ThemeId[];
+
 interface ThemeContextValue {
   activeTheme: ThemeId | null;
   selectTheme: (id: ThemeId) => void;

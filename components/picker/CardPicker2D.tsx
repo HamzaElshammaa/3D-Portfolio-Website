@@ -1,12 +1,9 @@
 'use client';
 
 import type { ThemeId } from '@/lib/theme-context';
+import { THEMES, THEME_IDS } from '@/lib/theme-context';
 
-const CARDS: { id: ThemeId; label: string; description: string }[] = [
-  { id: 'apple', label: 'Apple-clean', description: 'Minimal. Calm. Premium.' },
-  { id: 'brutalist', label: 'Brutalist', description: 'Bold. Editorial. Uncompromising.' },
-  { id: 'terminal', label: 'Terminal', description: 'Technical. Precise. Engineered.' },
-];
+const CARDS = THEME_IDS.map((id) => ({ id, ...THEMES[id] }));
 
 export function CardPicker2D({
   onSelectTheme,
