@@ -18,7 +18,17 @@ function validate(payload: Partial<ContactPayload>): string | null {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const payload = (await request.json()) as Partial<ContactPayload>;
+  let payload: Partial<ContactPayload>;
+  try {
+    const parsed: unknown = await request.json();
+    if (typeof parsed !== 'object' || parsed === null) {
+      return Response.json({ error: 'Invalid request body.' }, { status: 400 });
+    }
+    payload = parsed as Partial<ContactPayload>;
+  } catch {
+    return Response.json({ error: 'Invalid request body.' }, { status: 400 });
+  }
+
   const validationError = validate(payload);
   if (validationError) {
     return Response.json({ error: validationError }, { status: 400 });

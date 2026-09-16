@@ -54,4 +54,20 @@ describe('POST /api/contact', () => {
     );
     expect(response.status).toBe(500);
   });
+
+  it('returns 400 when the body is not valid JSON', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/contact', {
+        method: 'POST',
+        body: '{not json',
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 400 when the body is valid JSON but not an object', async () => {
+    const response = await POST(makeRequest(null));
+    expect(response.status).toBe(400);
+  });
 });
