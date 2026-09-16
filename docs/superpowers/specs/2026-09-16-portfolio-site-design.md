@@ -34,11 +34,10 @@ proceed against this set unless revised):
    corners, restrained neutral palette with a single accent, system-style
    sans typography (e.g. SF Pro–adjacent / Inter). Calm, premium, consumer
    product feel.
-2. **Kinetic Editorial Brutalism** — reuses the existing draft in
-   [Design.nd.txt](../../../Design.nd.txt): acid lime (`#CCFF00`) on
-   carbon black (`#0F0F11`) and bone cream (`#E9F1DF`), zero-radius,
-   hairline-bordered broadsheet grid, massive Syne display type, Space
-   Grotesk body/labels. Aggressive, editorial, high-contrast.
+2. **Retro** — a CRT/terminal-adjacent throwback: glowing phosphor-green
+   and amber accents on near-black, scanline and vignette texture,
+   chunky pixel-grid display type, low-fi monospace/bitmap body copy.
+   Nostalgic, glowing, tactile.
 3. **Terminal** — dark, monospace-led (e.g. JetBrains Mono / Fira Code
    throughout, not just labels), command-line/IDE motifs (blinking cursor,
    ASCII/box-drawing borders, syntax-highlight color accents), single-column
@@ -57,8 +56,8 @@ so content only needs to be written a single time.
 - **Styling:** Tailwind CSS, with per-theme token/config sets
 - **3D intro scene:** built visually in [Spline](https://spline.design/)
   (3 floating card objects, named per theme e.g. `Card_Apple`,
-  `Card_Brutalist`, `Card_Terminal`, each with theme-appropriate materials
-  — frosted glass, cobalt/black brutalist edges, glowing CRT-green grid —
+  `Card_Retro`, `Card_Terminal`, each with theme-appropriate materials
+  — frosted glass, glowing CRT-green retro grid, terminal phosphor glow —
   and a mouse-hover tilt interaction authored in Spline). Embedded via
   `@splinetool/react-spline`; the scene's `onSplineMouseDown` handler
   receives a `SplineEvent` (`{ target: { name, id } }`) and reads the
@@ -112,10 +111,10 @@ Each theme's components render this same data; only presentation differs.
    role: anchor links (Work, About, Services, Contact) + a control to
    reopen the design-language picker.
 2. **Hero** — outcome-led headline/subhead + primary/secondary CTAs,
-   styled per theme (e.g. Apple: calm centered layout; Brutalism: massive
+   styled per theme (e.g. Apple: calm centered layout; Retro: massive
    broadsheet numerals; Terminal: boot-sequence/prompt-style intro).
 3. **Work** — 3–5 projects, presented per theme (e.g. Apple: soft device
-   frames with subtle shadow; Brutalism: bordered index-style rows with
+   frames with subtle shadow; Retro: bordered index-style rows with
    tabular numerals; Terminal: file-listing/directory-style entries),
    each linking to the live project.
 4. **About** — value-led narrative + skills, styled per theme.
@@ -139,7 +138,7 @@ Each theme's components render this same data; only presentation differs.
   key) — added as an environment variable, never committed
 - The authored Spline scene itself (a free Spline account is required):
   3 card objects named to match the themes, materials per theme (frosted
-  glass / cobalt-and-black brutalist / glowing CRT-green), and a hover-tilt
+  glass / glowing CRT-green retro / terminal phosphor glow), and a hover-tilt
   interaction — either the owner builds this in Spline's editor, or it's
   scoped as a separate task since it's visual-design work done inside a
   third-party tool rather than code

@@ -4,8 +4,8 @@ import { ComingSoon } from './ComingSoon';
 
 describe('ComingSoon', () => {
   it('renders the given theme label', () => {
-    render(<ComingSoon themeLabel="Brutalist" />);
-    expect(screen.getByText(/brutalist/i)).toBeInTheDocument();
+    render(<ComingSoon themeLabel="Retro" />);
+    expect(screen.getByText(/retro/i)).toBeInTheDocument();
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
   });
 });

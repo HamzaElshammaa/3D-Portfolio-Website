@@ -13,9 +13,9 @@ import { themeRegistry } from './registry';
 import { content } from '@/content/site-content';
 
 describe('themeRegistry', () => {
-  it('has an entry for apple, brutalist, and terminal', () => {
+  it('has an entry for apple, retro, and terminal', () => {
     expect(themeRegistry.apple).toBeDefined();
-    expect(themeRegistry.brutalist).toBeDefined();
+    expect(themeRegistry.retro).toBeDefined();
     expect(themeRegistry.terminal).toBeDefined();
   });
 
@@ -25,9 +25,9 @@ describe('themeRegistry', () => {
     expect(screen.getByRole('heading', { name: content.hero.headline })).toBeInTheDocument();
   });
 
-  it('renders a coming-soon placeholder for "brutalist"', () => {
-    const BrutalistEntry = themeRegistry.brutalist;
-    render(<BrutalistEntry />);
+  it('renders a coming-soon placeholder for "retro"', () => {
+    const RetroEntry = themeRegistry.retro;
+    render(<RetroEntry />);
     expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
   });
 

@@ -6,6 +6,6 @@ import { ComingSoon } from './ComingSoon';
 
 export const themeRegistry: Record<ThemeId, () => ReactElement> = {
   apple: AppleTheme,
-  brutalist: () => <ComingSoon themeLabel={THEMES.brutalist.label} />,
+  retro: () => <ComingSoon themeLabel={THEMES.retro.label} />,
   terminal: () => <ComingSoon themeLabel={THEMES.terminal.label} />,
 };

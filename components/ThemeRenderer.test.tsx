@@ -6,14 +6,14 @@ vi.mock('./picker/PickerGate', () => ({
   PickerGate: ({ onSelectTheme }: { onSelectTheme: (id: string) => void }) => (
     <div>
       <button onClick={() => onSelectTheme('apple')}>pick apple</button>
-      <button onClick={() => onSelectTheme('brutalist')}>pick brutalist</button>
+      <button onClick={() => onSelectTheme('retro')}>pick retro</button>
     </div>
   ),
 }));
 vi.mock('@/themes/registry', () => ({
   themeRegistry: {
     apple: () => <div data-testid="apple-theme" />,
-    brutalist: () => <div data-testid="brutalist-theme" />,
+    retro: () => <div data-testid="retro-theme" />,
     terminal: () => <div data-testid="terminal-theme" />,
   },
 }));
@@ -70,8 +70,8 @@ describe('ThemeRenderer', () => {
         <ThemeRenderer />
       </ThemeProvider>
     );
-    await user.click(screen.getByText('pick brutalist'));
-    await screen.findByTestId('brutalist-theme');
+    await user.click(screen.getByText('pick retro'));
+    await screen.findByTestId('retro-theme');
     expect(screen.getByRole('button', { name: /switch design/i })).toBeInTheDocument();
   });
 
@@ -87,16 +87,16 @@ describe('ThemeRenderer', () => {
     await screen.findByTestId('apple-theme');
 
     await user.click(screen.getByRole('button', { name: /switch design/i }));
-    await screen.findByText('pick brutalist');
+    await screen.findByText('pick retro');
     // The apple view must be gone, not just hidden — a lingering
     // opacity:0 copy would still be focusable and exposed to assistive
     // technology, and would accumulate on every switch.
     expect(screen.queryByTestId('apple-theme')).not.toBeInTheDocument();
 
-    await user.click(screen.getByText('pick brutalist'));
-    await screen.findByTestId('brutalist-theme');
+    await user.click(screen.getByText('pick retro'));
+    await screen.findByTestId('retro-theme');
     expect(screen.queryByText('pick apple')).not.toBeInTheDocument();
-    expect(screen.queryByText('pick brutalist')).not.toBeInTheDocument();
+    expect(screen.queryByText('pick retro')).not.toBeInTheDocument();
     expect(screen.queryByTestId('apple-theme')).not.toBeInTheDocument();
   });
 });

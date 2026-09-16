@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
-export type ThemeId = 'apple' | 'brutalist' | 'terminal';
+export type ThemeId = 'apple' | 'retro' | 'terminal';
 
 export interface ThemeDescriptor {
   label: string;
@@ -24,10 +24,10 @@ export const THEMES: Record<ThemeId, ThemeDescriptor> = {
     description: 'Minimal. Calm. Premium.',
     splineObjectName: 'Card_Apple',
   },
-  brutalist: {
-    label: 'Brutalist',
-    description: 'Bold. Editorial. Uncompromising.',
-    splineObjectName: 'Card_Brutalist',
+  retro: {
+    label: 'Retro',
+    description: 'CRT-glow. Scanlines. Nostalgic.',
+    splineObjectName: 'Card_Retro',
   },
   terminal: {
     label: 'Terminal',

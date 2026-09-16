@@ -1,7 +1,7 @@
 # Known follow-ups after the foundation + Apple theme build
 
 Findings raised during review that were deliberately deferred rather than
-fixed. None block the current branch; several get worse once the Brutalist
+fixed. None block the current branch; several get worse once the Retro
 and Terminal themes are built, so the ones marked **before copying** should
 be settled early in Plan 2.
 

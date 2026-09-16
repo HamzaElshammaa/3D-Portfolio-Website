@@ -13,7 +13,7 @@ export interface ThemeStructureExpectations {
 /**
  * Structural smoke test shared across themes: every anchor id the nav links
  * to must exist in the document, and every section must actually render.
- * `AppleTheme.test.tsx` uses this today; `BrutalistTheme` and
+ * `AppleTheme.test.tsx` uses this today; `RetroTheme` and
  * `TerminalTheme` should be able to reuse it unchanged once they exist.
  */
 export function expectThemeRendersItsSections(
