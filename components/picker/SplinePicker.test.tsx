@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('@splinetool/react-spline', () => ({
-  default: ({ onMouseDown }: { onMouseDown: (e: { target: { name: string } }) => void }) => (
+  default: ({ onSplineMouseDown }: { onSplineMouseDown: (e: { target: { name: string } }) => void }) => (
     <div
       data-testid="mock-spline"
-      onMouseDown={() => onMouseDown({ target: { name: 'Card_Brutalist' } })}
+      onMouseDown={() => onSplineMouseDown({ target: { name: 'Card_Brutalist' } })}
     />
   ),
 }));

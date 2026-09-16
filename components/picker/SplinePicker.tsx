@@ -1,6 +1,7 @@
 'use client';
 
 import Spline from '@splinetool/react-spline';
+import type { SplineEvent } from '@splinetool/react-spline';
 import type { ThemeId } from '@/lib/theme-context';
 
 const OBJECT_NAME_TO_THEME: Record<string, ThemeId> = {
@@ -16,7 +17,7 @@ export function SplinePicker({
   sceneUrl: string;
   onSelectTheme: (id: ThemeId) => void;
 }) {
-  function handleMouseDown(e: { target: { name: string } }) {
+  function handleSplineMouseDown(e: SplineEvent) {
     const theme = OBJECT_NAME_TO_THEME[e.target.name];
     if (theme) {
       onSelectTheme(theme);
@@ -25,7 +26,7 @@ export function SplinePicker({
 
   return (
     <div className="relative h-screen w-full">
-      <Spline scene={sceneUrl} onMouseDown={handleMouseDown} />
+      <Spline scene={sceneUrl} onSplineMouseDown={handleSplineMouseDown} />
     </div>
   );
 }
