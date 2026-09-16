@@ -55,12 +55,20 @@ so content only needs to be written a single time.
 
 - **Framework:** Next.js (App Router) + React + TypeScript
 - **Styling:** Tailwind CSS, with per-theme token/config sets
-- **3D intro scene:** React Three Fiber (Three.js) for the floating-card
-  picker, with hover depth/parallax and a zoom-into-card transition on
-  click
+- **3D intro scene:** built visually in [Spline](https://spline.design/)
+  (3 floating card objects, named per theme e.g. `Card_Apple`,
+  `Card_Brutalist`, `Card_Terminal`, each with theme-appropriate materials
+  — frosted glass, cobalt/black brutalist edges, glowing CRT-green grid —
+  and a mouse-hover tilt interaction authored in Spline). Embedded via
+  `@splinetool/react-spline`; a click handler reads the clicked object's
+  name from the Spline event target to trigger theme selection, then
+  drives the zoom/transition and theme switch from React (not from a
+  CSS-variable swap alone — see theming approach above, which this
+  transition hands off into).
 - **Fallback picker:** a CSS/2D version of the same card-pick concept and
   zoom transition for mobile and low-end/low-power devices (feature-detect
-  WebGL support and reduced-motion preference; fall back accordingly)
+  WebGL support and reduced-motion preference; fall back accordingly),
+  since Spline's WebGL scene has the same device constraints raw R3F would
 - **Motion:** Framer Motion for section reveals, hover effects, and the
   cross-fade/transition when switching between theme component trees
 - **Contact form backend:** Next.js API route + an email-sending service
@@ -128,6 +136,12 @@ Each theme's components render this same data; only presentation differs.
   links
 - Email-sending service credentials for the contact form (e.g. Resend API
   key) — added as an environment variable, never committed
+- The authored Spline scene itself (a free Spline account is required):
+  3 card objects named to match the themes, materials per theme (frosted
+  glass / cobalt-and-black brutalist / glowing CRT-green), and a hover-tilt
+  interaction — either the owner builds this in Spline's editor, or it's
+  scoped as a separate task since it's visual-design work done inside a
+  third-party tool rather than code
 
 ## Testing / Verification Plan
 
@@ -165,3 +179,11 @@ Each theme's components render this same data; only presentation differs.
   impressive rather than gimmicky; performance budgets and the fallback
   path are not optional polish, they're required for the concept to work
   across the range of visitor devices.
+- Spline scenes add runtime weight (`@splinetool/runtime`) and depend on a
+  scene hosted at a Spline-provided URL; the scene should be exported/self
+  -hosted rather than relying on Spline's free-tier hosting limits if the
+  site gets meaningful traffic. Spline's exposed interaction API (reading
+  clicked-object names via the `onMouseDown` event target) is the
+  integration point with React — the site's click/theme-switch logic and
+  the full-screen theme swap remain hand-coded in React, only the 3D scene
+  itself is authored visually.
