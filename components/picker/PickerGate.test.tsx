@@ -37,4 +37,12 @@ describe('PickerGate', () => {
     render(<PickerGate onSelectTheme={() => {}} />);
     expect(screen.getByTestId('2d-picker')).toBeInTheDocument();
   });
+
+  it('renders the 2D picker when no Spline scene url is configured, even with webgl support', () => {
+    vi.stubEnv('NEXT_PUBLIC_SPLINE_SCENE_URL', '');
+    vi.mocked(useWebGLSupported).mockReturnValue(true);
+    vi.mocked(usePrefersReducedMotion).mockReturnValue(false);
+    render(<PickerGate onSelectTheme={() => {}} />);
+    expect(screen.getByTestId('2d-picker')).toBeInTheDocument();
+  });
 });

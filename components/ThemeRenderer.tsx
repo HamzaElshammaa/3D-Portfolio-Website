@@ -13,33 +13,16 @@ export function ThemeRenderer() {
   return (
     <>
       {/*
-       * No AnimatePresence, and no `exit` prop, here — deliberately.
-       *
-       * A previous version wrapped this swap in AnimatePresence with
-       * mode="wait", which wedged the switcher (see the earlier fix in this
-       * file's history: the outgoing child's exit-complete signal, driven by
-       * the Web Animations API's `finished` promise, can be deferred
-       * indefinitely by the browser while the tab is hidden/backgrounded).
-       * Switching to AnimatePresence's default "sync" mode fixed the wedge,
-       * but left a second problem: without `mode="wait"` blocking anything,
-       * AnimatePresence still keeps every outgoing child mounted at
-       * opacity: 0 until ITS OWN exit-complete signal fires — which is the
-       * exact signal that can stall. In practice that meant the picker, the
-       * Apple theme, and any placeholder all stayed in the DOM
-       * simultaneously: invisible but still in the tab order and the
-       * accessibility tree, and never cleaned up (accumulating with every
-       * switch).
-       *
-       * The fix is to not depend on an exit animation completing at all.
-       * Using a plain keyed `motion.div` with only `initial`/`animate` (no
-       * `exit`, no AnimatePresence) means React's normal reconciliation
-       * removes the outgoing subtree from the DOM synchronously the moment
-       * `activeTheme` changes — no fade-out, but also nothing left behind to
-       * be focused, read by a screen reader, or pile up across switches. The
-       * incoming view still animates in (initial -> animate), which is the
-       * transition that actually matters for the product's opening moment;
-       * we're trading the exit fade for correctness, not dropping the
-       * transition entirely.
+       * Do not reintroduce AnimatePresence or an `exit` prop here. The WAAPI
+       * `finished` promise an exit animation depends on does not resolve
+       * while the tab is hidden/backgrounded, which can wedge the switcher
+       * or leave outgoing views mounted (invisible, but still in the tab
+       * order and accessibility tree) indefinitely. A plain keyed
+       * `motion.div` with only `initial`/`animate` sidesteps this: React's
+       * normal reconciliation removes the outgoing subtree synchronously
+       * when `activeTheme` changes, so correctness never depends on an
+       * animation completing. We keep the entrance transition and drop the
+       * exit fade.
        */}
       {activeTheme === null ? (
         <motion.div
