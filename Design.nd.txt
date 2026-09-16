@@ -1,0 +1,233 @@
+---
+name: Kinetic Editorial Brutalism
+colors:
+  surface: '#f4fcea'
+  surface-dim: '#d5ddcb'
+  surface-bright: '#f4fcea'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#eef6e4'
+  surface-container: '#e9f1df'
+  surface-container-high: '#e3ebd9'
+  surface-container-highest: '#dde5d4'
+  on-surface: '#171e13'
+  on-surface-variant: '#47464a'
+  inverse-surface: '#2b3327'
+  inverse-on-surface: '#ecf4e1'
+  outline: '#77767b'
+  outline-variant: '#c8c5ca'
+  surface-tint: '#5f5e60'
+  primary: '#000000'
+  on-primary: '#ffffff'
+  primary-container: '#1b1b1d'
+  on-primary-container: '#858386'
+  inverse-primary: '#c8c6c8'
+  secondary: '#506600'
+  on-secondary: '#ffffff'
+  secondary-container: '#c1f100'
+  on-secondary-container: '#546b00'
+  tertiary: '#000000'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#1e1b18'
+  on-tertiary-container: '#88837e'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  primary-fixed: '#e5e1e4'
+  primary-fixed-dim: '#c8c6c8'
+  on-primary-fixed: '#1b1b1d'
+  on-primary-fixed-variant: '#474649'
+  secondary-fixed: '#c3f400'
+  secondary-fixed-dim: '#abd600'
+  on-secondary-fixed: '#161e00'
+  on-secondary-fixed-variant: '#3c4d00'
+  tertiary-fixed: '#e8e1dc'
+  tertiary-fixed-dim: '#cbc5c0'
+  on-tertiary-fixed: '#1e1b18'
+  on-tertiary-fixed-variant: '#4a4642'
+  background: '#f4fcea'
+  on-background: '#171e13'
+  surface-variant: '#dde5d4'
+typography:
+  display-hero:
+    fontFamily: Syne
+    fontSize: 120px
+    fontWeight: '800'
+    lineHeight: 104px
+    letterSpacing: -0.04em
+  display-hero-mobile:
+    fontFamily: Syne
+    fontSize: 56px
+    fontWeight: '800'
+    lineHeight: 56px
+    letterSpacing: -0.03em
+  headline-xl:
+    fontFamily: Syne
+    fontSize: 64px
+    fontWeight: '700'
+    lineHeight: 68px
+    letterSpacing: -0.03em
+  headline-xl-mobile:
+    fontFamily: Syne
+    fontSize: 36px
+    fontWeight: '700'
+    lineHeight: 40px
+    letterSpacing: -0.02em
+  headline-lg:
+    fontFamily: Syne
+    fontSize: 40px
+    fontWeight: '700'
+    lineHeight: 44px
+    letterSpacing: -0.02em
+  headline-lg-mobile:
+    fontFamily: Syne
+    fontSize: 28px
+    fontWeight: '700'
+    lineHeight: 32px
+    letterSpacing: -0.01em
+  headline-md:
+    fontFamily: Syne
+    fontSize: 24px
+    fontWeight: '600'
+    lineHeight: 30px
+    letterSpacing: -0.01em
+  numeral-hero:
+    fontFamily: Space Grotesk
+    fontSize: 140px
+    fontWeight: '300'
+    lineHeight: 112px
+    letterSpacing: -0.05em
+  numeral-hero-mobile:
+    fontFamily: Space Grotesk
+    fontSize: 72px
+    fontWeight: '300'
+    lineHeight: 64px
+    letterSpacing: -0.03em
+  body-lg:
+    fontFamily: Space Grotesk
+    fontSize: 18px
+    fontWeight: '400'
+    lineHeight: 28px
+    letterSpacing: -0.01em
+  body-md:
+    fontFamily: Space Grotesk
+    fontSize: 15px
+    fontWeight: '400'
+    lineHeight: 24px
+    letterSpacing: 0em
+  body-sm:
+    fontFamily: Space Grotesk
+    fontSize: 13px
+    fontWeight: '400'
+    lineHeight: 18px
+    letterSpacing: 0.01em
+  label-md:
+    fontFamily: Space Grotesk
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: 16px
+    letterSpacing: 0.08em
+  label-xs:
+    fontFamily: Space Grotesk
+    fontSize: 10px
+    fontWeight: '700'
+    lineHeight: 12px
+    letterSpacing: 0.12em
+spacing:
+  gutter: 0px
+  gutter-desktop: 0px
+  gutter-mobile: 0px
+  margin: 2rem
+  margin-mobile: 1rem
+  space-xs: 0.25rem
+  space-sm: 0.5rem
+  space-md: 1rem
+  space-lg: 1.5rem
+  space-xl: 3rem
+---
+
+## Brand & Style
+
+This design system occupies the tension between archival print luxury and hyper-contemporary digital brutalism. Designed for an avant-garde creative studio, digital gallery, or high-concept atelier, the interface treats the viewport as an exhibition space where physical magazine pacing meets kinetic interaction.
+
+The personality is uncompromising, intellectual, and electrifying:
+- **Atmospheric Contrast:** Bone-colored editorial expanses abruptly punctured by high-voltage acid lime and deep carbon ink.
+- **Architectural Rigor:** Exposed grid lines, hairline structural framing, and strict modular geometry strip away standard consumer UI softness.
+- **Kinetic Stature:** Colossal display numbers, dynamic baseline shifts, and theatrical typographic scales designed to support fluid scroll mechanics and 3D web graphics.
+- **Tone:** Authoritative, curated, boundary-pushing, and uncompromisingly precise.
+
+## Colors
+
+The palette is engineered for severe graphic contrast, balancing organic parchment tones with industrial carbon and synthetic neon.
+
+- **Neutral Canvas (`#E9F1DF`):** A pale, mineral-tinted cream functioning as the tactile substrate. It avoids sterile digital white in favor of heavyweight editorial card stock.
+- **Carbon Ink (`#0F0F11`):** A saturated black with minimal warm dispersion. Used for structural grid hairlines, razor typography, and solid brutalist blocks.
+- **Acid Lime (`#CCFF00`):** An electric, high-chroma accent deployed exclusively for points of kinetic friction: interactive focus triggers, status pings, and selected states. Never diluted or used for long-form reading.
+- **Dark Mode Alternative:** The system reverses into `#121212` matte obsidian as the base canvas, retaining `#0F0F11` for sub-panels, `#E9F1DF` for stark hairline dividers and typography, and `#CCFF00` as the primary tactical glow.
+
+## Typography
+
+The typographic system fuses expressive display forms with technical grotesk geometries.
+
+- **Headlines & Expressive Titles:** Set in **Syne**. Features heavy weights (`700`, `800`), geometric proportions, and deliberate optical friction at massive scales. Tight tracking and compressed leading produce monolithic headline locks.
+- **Body & Data:** Set in **Space Grotesk**. Delivers technical clarity, disciplined tabular metrics, and raw editorial texture across paragraphs and metadata.
+- **Hero Numerals:** Giant tabular numerals designed to function as kinetic anchors, project indexers, and parallax counters.
+- **Labels:** Rendered exclusively in upper case with wide letter-spacing (`0.08em` to `0.12em`) to mirror archival print notation, coordinate systems, and technical metadata stamps.
+
+## Layout & Spacing
+
+The layout is an explicit editorial broadsheet grid:
+
+- **Grid Architecture:** 12-column rigid matrix on desktop, 6-column on tablet, and 2-column or single-column on mobile. Columns connect via hairline borders rather than empty gutter channels (`gutter: 0px`). Modules sit edge-to-edge in contiguous geometric cells.
+- **Structural Margins:** Canvas margins form an architectural mat board around content (`2rem` desktop, `1rem` mobile), bordered by a continuous perimeter line.
+- **Rhythm & Padding:** Internal content uses tight multiples (`space-sm` to `space-xl`) inside structural cells to maintain consistent typographic baselines. Modules stack flush against adjacent borders.
+- **Responsive Adaptation:** Grid modules reflow vertically on mobile breakpoints without breaking their bounding hairline enclosures.
+
+## Elevation & Depth
+
+This design system rejects drop shadows, atmospheric blurs, and soft skeuomorphic gradients. Spatial separation is achieved through sharp contrast and mechanical surface transitions:
+
+- **Hairline Outlines:** All content segmentation relies on crisp `1px` solid outlines in Carbon (`#0F0F11`) on light backgrounds or Cream (`#E9F1DF`) on dark backgrounds.
+- **Flat Inversion Tiers:** Active states, hovered panels, and overlay layers invert their surfaces: background switches instantaneously from `#E9F1DF` to `#0F0F11`, and foreground text snaps to `#CCFF00` or `#E9F1DF`.
+- **Z-Index Layering:** Modals, navigation drawers, and floating panels are hard-edged rectangular cutouts bordered by `2px` solid Carbon outlines, floating directly over content without soft ambient occlusion.
+
+## Shapes
+
+The shape system is strictly architectural and non-radiused:
+
+- **Zero-Radius Mandate:** Every container, button, chip, input field, and interactive tile features `0px` border radius (`roundedness: 0`).
+- **Right Angles:** Interfaces are treated as interlocking mechanical plates. Cutouts and structural dividers emphasize strict perpendicular axes.
+- **Sharp Truncations:** Diagonal chamfers or hard linear clipping masks may be used for technical markers, but round forms and pill shapes are prohibited.
+
+## Components
+
+### Buttons
+- **Primary:** Solid Carbon `#0F0F11` background, `#E9F1DF` uppercase text, `0px` radius, `1px` Carbon border. On hover: background flashes instantaneously to `#CCFF00`, text snaps to `#0F0F11`.
+- **Secondary / Outline:** Transparent background, `1px` Carbon border, Carbon text. On hover: background fills with `#0F0F11`, text turns `#CCFF00`.
+- **Kinetic Action:** Displayed with an index numeral prefix (e.g., `[ 01 ] ENTER ARCHIVE`) and right-aligned arrow glyphs.
+
+### Chips & Badges
+- Modular tags constructed with `1px` solid borders, `space-xs` vertical and `space-sm` horizontal padding.
+- Text set in `label-xs` uppercase. Active or spotlighted chips fill with solid `#CCFF00` and Carbon text.
+
+### Input Fields
+- Underlined-only or flush framed boxes with `1px` solid Carbon perimeter. Transparent fill.
+- Typographic label sits directly on the upper perimeter or pinned above in `label-xs` tracking.
+- Focused state replaces the base border with a `2px` solid Carbon line accompanied by a subtle `#CCFF00` corner tick or active status marker.
+
+### Checkboxes & Radios
+- **Checkbox:** Raw `16px × 16px` square with `1px` Carbon border. Checked state fills the box with solid Carbon containing an internal `#CCFF00` square pip (no curved checkmarks).
+- **Radio:** Diamond or sharp square variant with a centered dot in `#CCFF00`. Rounded radio geometries are omitted.
+
+### Cards & Exhibition Tiles
+- Bordered on all four sides by `1px` Carbon lines, tiling edge-to-edge with neighboring cards.
+- Content structured into partitioned cells: metadata and catalog index pinned to top rows, primary asset/media occupying the center frame, and title locks anchored to the bottom.
+- On hover, tile borders thicken to `2px` or reverse color values.
+
+### Lists & Indexes
+- Continuous broadsheet rows separated by `1px` horizontal hairline borders.
+- Monospaced tabular index on the left (`001`, `002`), title in `headline-md`, and metadata tags aligned to the right grid columns.
+- Hover expands the row vertically or reveals an inline thumbnail, accompanied by a foreground flash to `#CCFF00`.
+
+### Typographic Tickers & Coordinate Bars
+- Fixed viewport header and footer strips running continuous archival coordinates, timestamp clocks, and ticker streams in `label-xs`, anchoring the editorial frame.
