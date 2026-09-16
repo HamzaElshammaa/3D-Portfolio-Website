@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { AppleWork } from './Work';
 import type { Project } from '@/content/site-content';
 
@@ -25,13 +25,26 @@ const projects: Project[] = [
 ];
 
 describe('AppleWork', () => {
-  it('renders one card per project with a link to its live url', () => {
-    render(<AppleWork projects={projects} />);
+  it('renders the section heading and one card per project, each linking to its live url in a new tab', () => {
+    render(<AppleWork projects={projects} heading="Selected Work" />);
+    expect(screen.getByRole('heading', { name: 'Selected Work' })).toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(projects.length);
     expect(screen.getByText('Project One')).toBeInTheDocument();
     expect(screen.getByText('Project Two')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /project one/i })).toHaveAttribute(
-      'href',
-      'https://example.com/one'
-    );
+    const link = screen.getByRole('link', { name: /project one/i });
+    expect(link).toHaveAttribute('href', 'https://example.com/one');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+  });
+
+  it('falls back to the grey placeholder when the project image fails to load', () => {
+    const { container } = render(<AppleWork projects={projects} heading="Selected Work" />);
+    const images = container.querySelectorAll('img');
+    expect(images.length).toBe(projects.length);
+    const firstImage = images[0];
+    act(() => {
+      firstImage.dispatchEvent(new Event('error'));
+    });
+    expect(container.querySelectorAll('img').length).toBe(projects.length - 1);
   });
 });

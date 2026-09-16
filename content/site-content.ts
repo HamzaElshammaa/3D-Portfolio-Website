@@ -21,7 +21,17 @@ export interface ServiceItem {
   description: string;
 }
 
+export interface NavLink {
+  href: string;
+  label: string;
+}
+
 export interface SiteContent {
+  site: {
+    wordmark: string;
+    copyrightNotice: string;
+  };
+  nav: NavLink[];
   hero: {
     headline: string;
     subhead: string;
@@ -29,10 +39,12 @@ export interface SiteContent {
     secondaryCtaLabel: string;
   };
   projects: Project[];
+  workHeading: string;
   about: {
     narrative: string;
     skills: string[];
   };
+  servicesHeading: string;
   services: ServiceItem[];
   testimonials: Testimonial[];
   contact: {
@@ -43,6 +55,16 @@ export interface SiteContent {
 }
 
 export const content: SiteContent = {
+  site: {
+    wordmark: 'Portfolio',
+    copyrightNotice: 'All rights reserved.',
+  },
+  nav: [
+    { href: '#work', label: 'Work' },
+    { href: '#about', label: 'About' },
+    { href: '#services', label: 'Services' },
+    { href: '#contact', label: 'Contact' },
+  ],
   hero: {
     headline: 'I build fast, polished web and mobile products.',
     subhead:
@@ -79,11 +101,13 @@ export const content: SiteContent = {
       imageUrl: '/projects/placeholder-3.png',
     },
   ],
+  workHeading: 'Selected Work',
   about: {
     narrative:
       'I help clients ship products faster without sacrificing polish — from first pixel to production deploy.',
     skills: ['React', 'Next.js', 'React Native', 'TypeScript', 'Tailwind CSS'],
   },
+  servicesHeading: 'Services',
   services: [
     {
       title: 'Landing Pages',
