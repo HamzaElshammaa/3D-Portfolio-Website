@@ -37,13 +37,22 @@ vi.mock('@splinetool/react-spline', async () => {
   return { default: MockSpline };
 });
 
-import { ThemeProvider } from '@/lib/theme-context';
+import { ThemeProvider, useTheme } from '@/lib/theme-context';
 import { SPLINE_ZOOM_MS, BLACK_FADE_MS } from '@/lib/scene-phase';
 import { SplineFlow } from './SplineFlow';
+
+// Exposes the real ThemeContext's activeTheme so tests can assert it stays
+// in sync with the phase machine, instead of the machine keeping a second,
+// silently-diverging copy.
+function ActiveThemeProbe() {
+  const { activeTheme } = useTheme();
+  return <span data-testid="context-active-theme">{activeTheme ?? 'none'}</span>;
+}
 
 function renderFlow() {
   return render(
     <ThemeProvider>
+      <ActiveThemeProbe />
       <SplineFlow sceneUrl="https://example.com/scene.splinecode" />
     </ThemeProvider>
   );
@@ -164,5 +173,30 @@ describe('SplineFlow phase machine', () => {
 
     advance(BLACK_FADE_MS + SPLINE_ZOOM_MS);
     expect(hoisted.emitEventReverse).toHaveBeenCalledTimes(1);
+  });
+
+  it('drives the real ThemeContext.activeTheme instead of keeping a second, silent copy', () => {
+    renderFlow();
+    expect(screen.getByTestId('context-active-theme')).toHaveTextContent('none');
+
+    act(() => {
+      clickCard();
+    });
+    // Selected the instant the card is clicked, not only once the zoom finishes.
+    expect(screen.getByTestId('context-active-theme')).toHaveTextContent('apple');
+
+    advance(SPLINE_ZOOM_MS);
+    expect(screen.getByTestId('context-active-theme')).toHaveTextContent('apple');
+
+    act(() => {
+      clickSwitcher();
+    });
+    advance(BLACK_FADE_MS);
+    // Reverse zoom is playing; context still reports the outgoing theme
+    // until the machine has fully returned to `scene`.
+    expect(screen.getByTestId('context-active-theme')).toHaveTextContent('apple');
+
+    advance(SPLINE_ZOOM_MS);
+    expect(screen.getByTestId('context-active-theme')).toHaveTextContent('none');
   });
 });

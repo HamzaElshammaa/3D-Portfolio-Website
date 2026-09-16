@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Application } from '@splinetool/runtime';
 import type { ThemeId } from '@/lib/theme-context';
-import { THEMES } from '@/lib/theme-context';
+import { THEMES, useTheme } from '@/lib/theme-context';
 import { BLACK_FADE_MS, SPLINE_ZOOM_MS, type ScenePhase } from '@/lib/scene-phase';
 
 export interface SplineSceneMachine {
@@ -22,6 +22,16 @@ export interface SplineSceneMachine {
  * Owns the scene -> zoomingIn -> site -> fadingOut -> zoomingOut -> scene
  * phase machine described in `lib/scene-phase.ts`.
  *
+ * `activeTheme` is deliberately NOT local state here — it's read straight
+ * from `ThemeContext`, and `handleCardMouseDown` / the return-to-`scene`
+ * transition drive it via `selectTheme` / `reopenPicker`. An earlier
+ * version kept its own copy, which meant `ThemeContext.activeTheme` stayed
+ * `null` for the entire Spline session — invisible today because nothing
+ * reads it, but a trap for the first bit of chrome (a `<title>`, analytics,
+ * a header) that assumes it reflects reality. `phase` has no equivalent in
+ * `ThemeContext` and stays local — it's this hook's own concept, not
+ * something the 2D flow or the rest of the app needs to know about.
+ *
  * Every automatic transition (zoomingIn -> site, fadingOut -> zoomingOut,
  * zoomingOut -> scene) is driven by a plain `setTimeout` in a `useEffect`
  * keyed on the phase that starts it, deliberately NOT by an animation's
@@ -34,8 +44,8 @@ export interface SplineSceneMachine {
  * machine can be delayed but never stranded mid-phase.
  */
 export function useSplineSceneMachine(): SplineSceneMachine {
+  const { activeTheme, selectTheme, reopenPicker } = useTheme();
   const [phase, setPhase] = useState<ScenePhase>('scene');
-  const [activeTheme, setActiveTheme] = useState<ThemeId | null>(null);
   const appRef = useRef<Application | null>(null);
 
   const handleAppLoad = useCallback((app: Application) => {
@@ -45,10 +55,10 @@ export function useSplineSceneMachine(): SplineSceneMachine {
   const handleCardMouseDown = useCallback(
     (themeId: ThemeId) => {
       if (phase !== 'scene') return;
-      setActiveTheme(themeId);
+      selectTheme(themeId);
       setPhase('zoomingIn');
     },
-    [phase]
+    [phase, selectTheme]
   );
 
   const handleSwitcherClick = useCallback(() => {
@@ -80,13 +90,24 @@ export function useSplineSceneMachine(): SplineSceneMachine {
     if (phase !== 'zoomingOut') return;
     if (activeTheme && appRef.current) {
       appRef.current.emitEventReverse('mouseDown', THEMES[activeTheme].splineObjectName);
+    } else if (process.env.NODE_ENV !== 'production') {
+      // Either the scene never finished loading (appRef.current is still
+      // null) or activeTheme was somehow cleared before the reverse tween
+      // could fire — both mean the visitor won't see the card zoom back
+      // out. Not fatal (the timer below still returns the machine to
+      // `scene`), but worth knowing about during development.
+      console.warn(
+        `useSplineSceneMachine: skipped emitEventReverse (activeTheme=${String(
+          activeTheme
+        )}, application loaded=${Boolean(appRef.current)})`
+      );
     }
     const timeoutId = setTimeout(() => {
       setPhase('scene');
-      setActiveTheme(null);
+      reopenPicker();
     }, SPLINE_ZOOM_MS);
     return () => clearTimeout(timeoutId);
-  }, [phase, activeTheme]);
+  }, [phase, activeTheme, reopenPicker]);
 
   return { phase, activeTheme, handleAppLoad, handleCardMouseDown, handleSwitcherClick };
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { useCallback } from 'react';
+import type { Application } from '@splinetool/runtime';
 import { themeRegistry } from '@/themes/registry';
 import { BLACK_FADE_MS } from '@/lib/scene-phase';
 import { FloatingSwitcher } from '../FloatingSwitcher';
@@ -8,13 +10,30 @@ import { useSplineSceneMachine } from './useSplineSceneMachine';
 
 /**
  * The Spline-backed picker/site flow (used when `choosePickerVariant`
- * resolves to `'spline'`). Unlike `TwoDFlow`, the 3D scene is not swapped
- * out for the site — it sits underneath it for the entire session. See
- * `SplineSceneLayer` and `useSplineSceneMachine` for why.
+ * resolves to `'spline'` and the scene has loaded — see `SplineFlowGate`
+ * for the load-failure fallback). Unlike `TwoDFlow`, the 3D scene is not
+ * swapped out for the site — it sits underneath it for the entire
+ * session. See `SplineSceneLayer` and `useSplineSceneMachine` for why.
  */
-export function SplineFlow({ sceneUrl }: { sceneUrl: string }) {
+export function SplineFlow({
+  sceneUrl,
+  onSceneLoaded,
+}: {
+  sceneUrl: string;
+  /** Called once, the first time the scene's `onLoad` fires. Lets
+   * `SplineFlowGate` cancel its load-failure watchdog. */
+  onSceneLoaded?: () => void;
+}) {
   const { phase, activeTheme, handleAppLoad, handleCardMouseDown, handleSwitcherClick } =
     useSplineSceneMachine();
+
+  const handleLoad = useCallback(
+    (app: Application) => {
+      onSceneLoaded?.();
+      handleAppLoad(app);
+    },
+    [onSceneLoaded, handleAppLoad]
+  );
 
   const ActiveTheme = activeTheme ? themeRegistry[activeTheme] : null;
   const showSite = (phase === 'site' || phase === 'fadingOut') && ActiveTheme !== null;
@@ -25,7 +44,7 @@ export function SplineFlow({ sceneUrl }: { sceneUrl: string }) {
       <SplineSceneLayer
         sceneUrl={sceneUrl}
         interactive={phase === 'scene'}
-        onLoad={handleAppLoad}
+        onLoad={handleLoad}
         onCardMouseDown={handleCardMouseDown}
       />
 

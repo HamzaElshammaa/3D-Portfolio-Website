@@ -9,8 +9,8 @@ vi.mock('@/lib/device-support', async () => {
     usePrefersReducedMotion: vi.fn(),
   };
 });
-vi.mock('./spline/SplineFlow', () => ({
-  SplineFlow: () => <div data-testid="spline-flow" />,
+vi.mock('./spline/SplineFlowGate', () => ({
+  SplineFlowGate: () => <div data-testid="spline-flow" />,
 }));
 vi.mock('./TwoDFlow', () => ({
   TwoDFlow: () => <div data-testid="2d-flow" />,

@@ -34,3 +34,16 @@ export const SPLINE_ZOOM_MS = 800;
  * a named constant for the same reason: one place to retime it.
  */
 export const BLACK_FADE_MS = 250;
+
+/**
+ * How long we wait for the Spline scene to call `onLoad` before giving up
+ * and falling back to `TwoDFlow`. `<Spline>`'s typings expose no error
+ * callback (checked `Spline.d.ts` — `onLoad` is the only load-lifecycle
+ * prop), so a scene that 404s or stalls on a dropped connection would
+ * otherwise never resolve and never reject: the visitor would sit on a
+ * blank canvas forever with no way into the site. 8s is generous for a
+ * genuine WebGL scene load on a normal connection while still being a
+ * bounded wait rather than an indefinite one. The fallback this triggers
+ * is one-way — see `SplineFlowGate`.
+ */
+export const SPLINE_LOAD_TIMEOUT_MS = 8000;

@@ -235,3 +235,154 @@ mock in place:
    predate this branch's work and are unrelated to this feature; left
    untouched per the brief's instruction not to reimplement/touch that
    file. Flagging in case the project wants them fixed separately.
+
+## Fix round 1 (post-review)
+
+The review came back "fix before shipping" with two Important findings and
+a couple of defensive/smaller items. What follows is what changed in
+response, and the real verification for it.
+
+### 1. (Important) Unified `activeTheme` into `ThemeContext`
+
+`useSplineSceneMachine` no longer keeps its own `activeTheme` state. It now
+reads `activeTheme` and calls `selectTheme` / `reopenPicker` from
+`useTheme()` (`lib/theme-context.tsx`), which was already the app's single
+source of truth for "what theme is active" on the 2D path. Only `phase`
+remains machine-local state, since it has no equivalent anywhere else in
+the app.
+
+- `handleCardMouseDown` now calls `selectTheme(themeId)` (instead of a
+  local `setActiveTheme`) before moving to `zoomingIn`.
+- The `zoomingOut -> scene` transition now calls `reopenPicker()` (instead
+  of a local `setActiveTheme(null)`) in the same `setTimeout` that resets
+  `phase` to `'scene'`.
+- `SplineFlow` and `SplineFlow.test.tsx`'s `ActiveThemeProbe` read
+  `ThemeContext.activeTheme` directly to confirm it now tracks the phase
+  machine instead of staying `null` forever on the Spline path.
+
+I tried the unification first as asked, and it worked cleanly — there was
+no concrete blocker, so there's no context split to document. New test:
+`SplineFlow.test.tsx` — "drives the real ThemeContext.activeTheme instead
+of keeping a second, silent copy" — asserts the context value through the
+full pick -> site -> switch -> scene cycle, including that it updates
+**the instant** the card is clicked (not only once the zoom finishes) and
+stays at the outgoing theme through the reverse zoom until the machine is
+fully back at `scene`.
+
+### 2. (Important) Load-failure fallback
+
+Checked `node_modules/@splinetool/react-spline/dist/Spline.d.ts` directly,
+as asked, rather than assuming: `SplineProps` has `onLoad` and seven
+`onSpline*` event props, and no error/failure callback of any kind. So a
+scene that never resolves (404, dropped connection, bad URL) gives no
+signal to react to — `onLoad` just never fires.
+
+Added:
+
+- `SPLINE_LOAD_TIMEOUT_MS = 8000` in `lib/scene-phase.ts`, alongside the
+  other two named durations, with a comment stating the typings check and
+  the reasoning for the value (generous for a real load, still bounded).
+- `components/spline/useSceneLoadWatchdog.ts` — a small one-shot hook:
+  starts an `SPLINE_LOAD_TIMEOUT_MS` timer on mount, exposes `timedOut`
+  and a `markLoaded` callback. Once `timedOut` flips true it never flips
+  back (there's no code path that resets it), which is what makes the
+  fallback one-way.
+- `components/spline/SplineFlowGate.tsx` — sits between `ThemeRenderer`
+  and `SplineFlow`. Renders `SplineFlow` (wired so its first `onLoad`
+  calls `markLoaded`) until the watchdog times out, then renders `TwoDFlow`
+  instead, permanently, for the rest of that mount. `ThemeRenderer` now
+  points at `SplineFlowGate` instead of `SplineFlow` directly.
+- `SplineFlow` gained an optional `onSceneLoaded` prop that its own
+  `handleLoad` wrapper calls before forwarding to
+  `useSplineSceneMachine`'s `handleAppLoad`.
+
+"Must not fight the machine if the scene loads late": once `timedOut` is
+true, `SplineFlowGate` renders `TwoDFlow` and `SplineFlow` (and the
+Spline canvas under it) is unmounted — there is no longer a component in
+the tree that could call `markLoaded` even if the underlying scene promise
+did eventually resolve, so there's no reconciliation to get wrong. Tested
+directly in `SplineFlowGate.test.tsx`: renders `SplineFlow` before the
+timeout, falls back to `TwoDFlow` when the timeout elapses with no load,
+does *not* fall back if `onSceneLoaded` fires first, and — the one-way
+check — advancing time further after the fallback has already happened
+changes nothing (there's nothing left mounted to fire the late load).
+
+### 3. (Defensive) Group-name aliases + diagnosable misses
+
+`SplineSceneLayer.tsx`'s `OBJECT_NAME_TO_THEME` now maps both the card
+mesh name and its parent group's name (derived as
+`splineObjectName.replace(/^Card_/, 'Group_')`, not a second hardcoded
+list) to the same theme id, so `Group_Apple` / `Group_Retro` /
+`Group_Terminal` work as aliases for `Card_Apple` / `Card_Retro` /
+`Card_Terminal`. When a `MouseDown` arrives with a name matching neither,
+it now logs `console.warn` naming the exact unmapped object, gated on
+`process.env.NODE_ENV !== 'production'`.
+
+New test file `SplineSceneLayer.test.tsx` covers all three paths
+directly against the real (mocked) `onSplineMouseDown` callback: a card
+name resolves correctly, a group name resolves to the same theme, and an
+unrecognized name triggers a `console.warn` containing that name and does
+not call `onCardMouseDown`.
+
+### Smaller items
+
+- `useSplineSceneMachine`'s `zoomingOut` effect now logs a
+  `console.warn` (dev-only) instead of silently skipping when it can't
+  fire the reverse call (`activeTheme` unset or the `Application` never
+  loaded), naming which of the two conditions failed.
+- `SplineSceneLayer`'s wrapper `className` is now `fixed inset-0 z-0` —
+  dropped the redundant `h-screen w-full` (a `fixed inset-0` element is
+  already sized to the viewport on all four edges).
+- `FloatingSwitcher`'s `onClick` prop now has a doc comment stating the
+  default (`reopenPicker`) is the 2D flow's behavior and the override is
+  the Spline flow's.
+
+### Verification (real output)
+
+```
+$ npx vitest run
+ Test Files  21 passed (21)
+      Tests  59 passed (59)
+   Duration  4.41s
+
+$ npx tsc --noEmit
+(no output — clean)
+
+$ npm run build
+✓ Compiled successfully in 1537ms
+  Running TypeScript ...
+  Finished TypeScript in 1378ms ...
+✓ Generating static pages using 6 workers (5/5) in 470ms
+
+$ npx eslint components/spline components/ThemeRenderer.tsx components/ThemeRenderer.test.tsx components/FloatingSwitcher.tsx lib/scene-phase.ts
+(no output — clean)
+```
+
+21 test files / 59 tests (up from 19 files / 50 tests): four new files
+(`SplineFlowGate.test.tsx`, `SplineSceneLayer.test.tsx`) plus one new case
+appended to `SplineFlow.test.tsx`, on top of the existing suite untouched
+in behavior.
+
+### What's still unverified, and why
+
+Same limitation as before, now applied to the new code: jsdom cannot run
+the real `@splinetool/react-spline` component, so none of this — the
+load-timeout fallback, the group-alias lookup, the unified context value —
+has been exercised against the actual published scene, because
+`NEXT_PUBLIC_SPLINE_SCENE_URL` is still unset. Specifically unverified:
+
+- Whether 8 seconds is actually the right timeout for the real scene's
+  load time on a real connection — chosen as a reasonable bound, not
+  measured against anything real.
+- Whether the real `<Spline>` component's promise-based load path behaves
+  the way my hand-written mock assumes (calls `onLoad` once, exactly, with
+  a live `Application`) under an actual network failure/404 rather than
+  just "never calls onLoad" — I modeled the failure mode as "onLoad never
+  fires," which is the one thing the typings and the brief both support,
+  but a real 404 might do something else first (e.g. reject a promise
+  internally that surfaces as an uncaught rejection rather than a hang).
+  That would be a different bug than the one this fallback fixes, and I
+  have no way to observe it here.
+- Whether `Group_Apple` etc. are the actual group names in the live scene
+  — taken from the brief's stated MCP inspection, not re-verified by me
+  against the scene itself.

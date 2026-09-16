@@ -2,7 +2,15 @@
 
 import { useTheme } from '@/lib/theme-context';
 
-export function FloatingSwitcher({ onClick }: { onClick?: () => void } = {}) {
+export function FloatingSwitcher({
+  onClick,
+}: {
+  /** Defaults to `reopenPicker` — the 2D flow's "switch" behavior. The
+   * Spline flow overrides it with its own phase machine's switcher
+   * handler instead, since returning to the scene there means starting a
+   * reverse zoom, not an instant reopen. */
+  onClick?: () => void;
+} = {}) {
   const { reopenPicker } = useTheme();
   return (
     <button
