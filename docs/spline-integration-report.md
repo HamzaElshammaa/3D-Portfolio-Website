@@ -386,3 +386,162 @@ has been exercised against the actual published scene, because
 - Whether `Group_Apple` etc. are the actual group names in the live scene
   — taken from the brief's stated MCP inspection, not re-verified by me
   against the scene itself.
+
+## Fix round 2 (live-runtime bug: reverse zoom self-triggers a new zoom-in)
+
+The scene URL landed and the coordinator ran the real thing in a browser.
+Everything structural held up (persistence, unmount-before-reverse
+ordering, object/event names, `choosePickerVariant` as sole decision
+point) — but a real bug only the live runtime could expose: after the
+zoom-out finished, the site came back on its own and the machine ended in
+`site` instead of `scene`.
+
+### Root cause
+
+`Application.emitEventReverse('mouseDown', ...)` doesn't just play the
+authored tween backwards — it re-emits an actual `mouseDown` event on the
+card object, which arrives right back at our own `onSplineMouseDown`
+listener. The `@splinetool/react-spline` runtime registers that listener
+once, when the scene first loads, and never rebinds it to a fresh prop on
+re-render. So `handleCardMouseDown`'s old `useCallback([phase, ...])`
+guard was still running the very first render's closure — `phase ===
+'scene'`, the initial state — when the self-inflicted event arrived during
+`zoomingOut`. The `phase !== 'scene'` check passed, `selectTheme` ran, and
+`setPhase('zoomingIn')` started a whole new zoom-in. The measured timeline
+matched exactly: reverse fires at `BLACK_FADE_MS` (~250ms) into
+`zoomingOut`, a fresh zoom-in takes `SPLINE_ZOOM_MS` (800ms), and
+250 + 800 = 1050 — precisely when the site reappeared live.
+
+### Fix
+
+`useSplineSceneMachine.ts` now mirrors `phase` into a `phaseRef` (kept
+current via a `useEffect` on `phase`), and `handleCardMouseDown` /
+`handleSwitcherClick` both check `phaseRef.current` instead of the
+`phase` they close over. This makes both callbacks correct regardless of
+which render's closure the Spline runtime happened to freeze, because the
+check reads through a stable ref object rather than a captured primitive.
+As a side effect, both callbacks' `useCallback` dependency arrays shrank
+(`handleCardMouseDown` now only depends on `selectTheme`, itself stable;
+`handleSwitcherClick` has no deps at all) — they're now the same function
+reference for the lifetime of the component, which is itself part of why
+the fix is robust: there's no "latest" closure to miss.
+
+**Ref guard alone, not a separate suppression flag.** I considered adding
+an explicit "ignore card events while reverse-emitting" flag, since a
+self-inflicted event is arguably something to suppress at the source. I
+didn't, because the ref guard already covers exactly that window and
+nothing more: `handleCardMouseDown` requires `phaseRef.current === 'scene'`,
+and the machine is in `'scene'` only after the reverse zoom has fully
+finished — so any self-emitted event landing during `zoomingOut` (or any
+other non-`scene` phase) is already rejected by the same check every other
+out-of-phase call goes through. A separate flag would track information
+the phase already tracks, for a window (`zoomingOut`) the phase already
+names precisely.
+
+**Confirmed there's nothing else exposed:** `handleAppLoad` only writes
+`appRef.current = app` — no state read, so no closure to go stale.
+`handleCardMouseDown` and `handleSwitcherClick` were the only two
+Spline-registered callbacks reading component state, and both are fixed.
+
+### Verified live, against the real scene
+
+With the fix in place and `.env.local`'s real scene URL active, I drove
+the actual flow in the browser (not just jsdom):
+
+1. Loaded `localhost:3000` — the real Spline canvas rendered, three cards,
+   no 2D fallback.
+2. Clicked the left card — Apple theme mounted correctly with its real
+   hero heading and the switcher.
+3. Clicked "Switch design" — screenshotted immediately after (~1s) and
+   again ~4s later. In both, the visitor was back at the three-card scene
+   with **no site content and no switcher** — reproducing the reviewer's
+   exact repro steps and confirming the site does not reappear at
+   t≈1100ms the way it did before the fix.
+4. Clicked the third card — the Terminal "coming soon" placeholder mounted
+   correctly, confirming the cycle still repeats after a full round trip.
+
+This is the one part of this project I could actually verify against the
+real runtime rather than a mock, and it confirms the fix.
+
+### Regression test
+
+Rewrote `SplineFlow.test.tsx`'s Spline mock to be faithful to the real
+bug's precondition instead of glossing over it: `onSplineMouseDown` is now
+captured via `useRef`'s lazy initializer (reads only the very first
+render's value, exactly like the real runtime's one-time registration),
+and the mocked `emitEventReverse` re-invokes that frozen handler with the
+same object name — modeling the actual "reverse call re-emits a mouseDown"
+behavior, not just its transition-completion side effect. This is a
+stricter mock than before: a fix that only worked because the old mock
+read `onSplineMouseDown` fresh every render would fail against it.
+
+New test, `'regression: a self-emitted mouseDown from emitEventReverse
+cannot restart a new zoom-in'`: runs the full pick -> site -> switch
+sequence, confirms `emitEventReverse` fires and immediately re-triggers
+`onSplineMouseDown` for the same card, then advances time well past where
+a spuriously-accepted zoom-in would have completed and put the site back
+up. Asserts: no heading, no switcher, `ThemeContext.activeTheme` is back
+to `null`, and `emitEventReverse` was called exactly once (the self-emitted
+event must not have been accepted as a new pick that would trigger its own
+second reverse).
+
+I confirmed this test is a real regression test, not just new coverage
+that happens to pass: I temporarily reverted `useSplineSceneMachine.ts` to
+its pre-fix (commit `d88589b`) version and reran `SplineFlow.test.tsx` —
+both the new regression test and the existing "drives the real
+ThemeContext.activeTheme" test failed against the now-stricter mock (the
+latter failed because the phantom zoom-in left `activeTheme` as `'apple'`
+instead of returning it to `null`). I then restored the fixed version and
+confirmed the full suite passes again.
+
+### Verification (real output)
+
+Reverted to the pre-fix hook, to prove the regression test is real:
+
+```
+$ npx vitest run components/spline/SplineFlow.test.tsx
+ ❯ components/spline/SplineFlow.test.tsx (6 tests | 2 failed)
+   × drives the real ThemeContext.activeTheme instead of keeping a second, silent copy
+     Expected: none   Received: apple
+   × regression: a self-emitted mouseDown from emitEventReverse cannot restart a new zoom-in
+     expected document not to contain element, found <h1 ...>
+```
+
+Restored the fix:
+
+```
+$ npx vitest run
+ Test Files  21 passed (21)
+      Tests  60 passed (60)
+   Duration  5.93s
+
+$ npx tsc --noEmit
+(no output — clean)
+
+$ npm run build
+- Environments: .env.local
+✓ Compiled successfully in 2.9s
+  Running TypeScript ...
+  Finished TypeScript in 1355ms ...
+✓ Generating static pages using 6 workers (5/5) in 485ms
+
+$ npx eslint components/spline/SplineFlow.test.tsx components/spline/useSplineSceneMachine.ts
+(no output — clean)
+```
+
+`.env.local` is present locally (confirmed via `git check-ignore -v
+.env.local`, matched by `.gitignore:34:.env*`) and was read by `next
+build` for this run, but `git status --short` before and after this round
+showed only the two files actually edited — it was never staged or
+committed.
+
+### What's still unverified
+
+Everything else from round 1's "what's still unverified" section still
+applies: the load-timeout fallback and the group-name alias have not been
+exercised against a real failed load or a real misattributed click,
+because the scene loads cleanly and attributes clicks to the card mesh as
+expected — confirmed live: no unmapped-name warning appeared while
+clicking through cards during the manual run. The one thing this round
+newly verifies against the real runtime is the exact bug reported and its
+fix.

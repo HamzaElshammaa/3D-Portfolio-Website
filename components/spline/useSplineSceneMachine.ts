@@ -42,11 +42,40 @@ export interface SplineSceneMachine {
  * permanently. A `setTimeout` fires late in a backgrounded tab — browsers
  * throttle background timers — but it always eventually fires, so the
  * machine can be delayed but never stranded mid-phase.
+ *
+ * `handleCardMouseDown` / `handleSwitcherClick` guard against a stale
+ * closure by reading `phaseRef.current` rather than the `phase` captured
+ * in their own closure. This isn't defensive paranoia: `emitEventReverse`
+ * doesn't just play the authored tween backwards, it *emits a real
+ * `mouseDown` event* on the card object, which our own `onSplineMouseDown`
+ * listener receives right back. The Spline runtime registers that
+ * listener once, when the scene first loads, and never rebinds it to a
+ * fresh prop — so a plain `useCallback([phase])` guard would still be
+ * running the very first render's closure (`phase === 'scene'`) when the
+ * self-inflicted event arrives during `zoomingOut`, incorrectly pass the
+ * `phase !== 'scene'` check, and kick off a brand-new zoom-in. That is
+ * exactly the bug this ref exists to prevent: verified live, the
+ * self-emitted event landed ~250ms after the reverse zoom started, and
+ * `250 + SPLINE_ZOOM_MS` is precisely when the site reappeared. A ref
+ * guard is sufficient on its own — every entry point re-checks
+ * `phaseRef.current` against the phase it actually requires, so a
+ * self-inflicted event arriving during `zoomingOut` is rejected by
+ * `handleCardMouseDown`'s `!== 'scene'` check the same as any other
+ * out-of-phase call would be. A separate "ignore card events while
+ * reverse-emitting" flag would duplicate that same information (the
+ * window it would cover is exactly the `zoomingOut` phase) for no benefit.
  */
 export function useSplineSceneMachine(): SplineSceneMachine {
   const { activeTheme, selectTheme, reopenPicker } = useTheme();
   const [phase, setPhase] = useState<ScenePhase>('scene');
+  const phaseRef = useRef<ScenePhase>('scene');
   const appRef = useRef<Application | null>(null);
+
+  // Keeps `phaseRef.current` current for callbacks a stale closure might
+  // be holding — see the guard rationale above.
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   const handleAppLoad = useCallback((app: Application) => {
     appRef.current = app;
@@ -54,17 +83,17 @@ export function useSplineSceneMachine(): SplineSceneMachine {
 
   const handleCardMouseDown = useCallback(
     (themeId: ThemeId) => {
-      if (phase !== 'scene') return;
+      if (phaseRef.current !== 'scene') return;
       selectTheme(themeId);
       setPhase('zoomingIn');
     },
-    [phase, selectTheme]
+    [selectTheme]
   );
 
   const handleSwitcherClick = useCallback(() => {
-    if (phase !== 'site') return;
+    if (phaseRef.current !== 'site') return;
     setPhase('fadingOut');
-  }, [phase]);
+  }, []);
 
   // zoomingIn -> site, once Spline's own zoom tween has finished playing.
   useEffect(() => {

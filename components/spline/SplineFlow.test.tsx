@@ -7,9 +7,26 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 // (proving the Spline layer persists rather than reloading), (b) calls
 // `onLoad` once with a fake `Application` whose `emitEventReverse` we can
 // assert on, and (c) fires `onSplineMouseDown` for a card on mousedown.
+//
+// Crucially, `onSplineMouseDown` is captured via `useRef`'s lazy-init
+// (only ever reads its very first render's value) rather than read fresh
+// each render. That's not a test convenience — it's the real runtime's
+// documented behavior: it registers the listener once when the scene
+// loads and never rebinds it to a fresh prop on re-render. Any fix that
+// relies on `handleCardMouseDown`/`handleSwitcherClick` being recreated
+// with a fresh closure per phase would pass against a more naive mock and
+// still be broken against the real scene, so the mock is deliberately
+// this strict.
+//
+// The mocked `emitEventReverse` also re-invokes that frozen handler with
+// the same object name, exactly as the real runtime does when reversing a
+// `MouseDown`-triggered transition: `emitEventReverse` doesn't just play
+// the tween backwards, it re-emits the `mouseDown` event itself, which
+// arrives right back at `onSplineMouseDown`.
 const hoisted = vi.hoisted(() => ({
   emitEventReverse: vi.fn(),
   mountCount: { current: 0 },
+  frozenMouseDown: { current: null as null | ((e: { target: { name: string } }) => void) },
 }));
 
 vi.mock('@splinetool/react-spline', async () => {
@@ -21,8 +38,10 @@ vi.mock('@splinetool/react-spline', async () => {
     onLoad?: (app: { emitEventReverse: typeof hoisted.emitEventReverse }) => void;
     onSplineMouseDown?: (e: { target: { name: string } }) => void;
   }) {
+    const frozenRef = React.useRef(onSplineMouseDown);
     React.useEffect(() => {
       hoisted.mountCount.current += 1;
+      hoisted.frozenMouseDown.current = frozenRef.current ?? null;
       onLoad?.({ emitEventReverse: hoisted.emitEventReverse });
       // Mount/load semantics only — deliberately not re-running per prop change.
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,7 +49,7 @@ vi.mock('@splinetool/react-spline', async () => {
     return (
       <div
         data-testid="mock-spline"
-        onMouseDown={() => onSplineMouseDown?.({ target: { name: 'Card_Apple' } })}
+        onMouseDown={() => frozenRef.current?.({ target: { name: 'Card_Apple' } })}
       />
     );
   }
@@ -76,7 +95,11 @@ describe('SplineFlow phase machine', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     hoisted.mountCount.current = 0;
-    hoisted.emitEventReverse.mockClear();
+    hoisted.frozenMouseDown.current = null;
+    hoisted.emitEventReverse.mockReset();
+    hoisted.emitEventReverse.mockImplementation((_eventName: string, name: string) => {
+      hoisted.frozenMouseDown.current?.({ target: { name } });
+    });
   });
 
   afterEach(() => {
@@ -198,5 +221,42 @@ describe('SplineFlow phase machine', () => {
 
     advance(SPLINE_ZOOM_MS);
     expect(screen.getByTestId('context-active-theme')).toHaveTextContent('none');
+  });
+
+  it('regression: a self-emitted mouseDown from emitEventReverse cannot restart a new zoom-in', () => {
+    renderFlow();
+
+    act(() => {
+      clickCard();
+    });
+    advance(SPLINE_ZOOM_MS);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+
+    act(() => {
+      clickSwitcher();
+    });
+    advance(BLACK_FADE_MS);
+
+    // Entering zoomingOut fired emitEventReverse, which (per the mock's
+    // faithful reproduction of the real runtime) immediately re-emitted a
+    // mouseDown for Card_Apple back through onSplineMouseDown. Before the
+    // fix, handleCardMouseDown's stale closure still saw phase === 'scene'
+    // from the very first render, accepted it, and kicked off a brand-new
+    // zoomingIn — reproduced live as the site reappearing ~SPLINE_ZOOM_MS
+    // after the reverse zoom started.
+    expect(hoisted.emitEventReverse).toHaveBeenCalledWith('mouseDown', 'Card_Apple');
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+
+    // Advance well past where a spuriously-accepted zoomingIn would have
+    // completed and put the site back up.
+    advance(SPLINE_ZOOM_MS + 500);
+
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /switch design/i })).not.toBeInTheDocument();
+    expect(screen.getByTestId('context-active-theme')).toHaveTextContent('none');
+    // Exactly one reverse call ever — the self-emitted event must not have
+    // been accepted as a new pick that would eventually trigger its own
+    // (second) reverse.
+    expect(hoisted.emitEventReverse).toHaveBeenCalledTimes(1);
   });
 });
