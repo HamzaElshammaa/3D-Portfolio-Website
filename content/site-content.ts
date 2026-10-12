@@ -56,8 +56,8 @@ export interface SiteContent {
 
 export const content: SiteContent = {
   site: {
-    wordmark: 'Portfolio',
-    copyrightNotice: 'All rights reserved.',
+    wordmark: 'Hamza El-Shammaa',
+    copyrightNotice: '© 2026 Hamza El-Shammaa. All rights reserved.',
   },
   nav: [
     { href: '#work', label: 'Work' },
@@ -66,80 +66,117 @@ export const content: SiteContent = {
     { href: '#contact', label: 'Contact' },
   ],
   hero: {
-    headline: 'I build fast, polished web and mobile products.',
+    headline: 'Precision-crafted web and mobile products for ambitious brands.',
     subhead:
-      'Freelance frontend developer helping startups and small teams ship interfaces that feel as good as they look.',
+      'Computer engineer and full-stack developer building fast, polished digital experiences from concept to production deploy.',
     primaryCtaLabel: 'View Work',
     secondaryCtaLabel: 'Get in touch',
   },
   projects: [
     {
-      id: 'project-one',
-      name: 'Project One',
-      description: 'Placeholder project — replace with a real case study.',
-      techStack: ['Next.js', 'TypeScript', 'Tailwind'],
-      liveUrl: 'https://example.com',
+      id: 'xsquare',
+      name: 'Xsquare Feast Menu',
+      description:
+        'Interactive brand experience and digital menu for an artisanal food truck, designed for speed, fluid navigation, and visual appetite appeal.',
+      techStack: ['Next.js', 'React', 'Tailwind CSS', 'Framer Motion'],
+      liveUrl: 'https://github.com/HamzaElshammaa/xsquare-feast-menu',
       kind: 'web',
       imageUrl: '/projects/placeholder-1.png',
     },
     {
-      id: 'project-two',
-      name: 'Project Two',
-      description: 'Placeholder project — replace with a real case study.',
-      techStack: ['React Native', 'TypeScript'],
-      liveUrl: 'https://example.com',
-      kind: 'mobile',
+      id: 'hoopoe-digital',
+      name: 'Hoopoe Digital',
+      description:
+        'Corporate web platform for spatial intelligence and smart WiFi, featuring interactive indoor map navigation, vulnerability mitigation, and billing integration.',
+      techStack: ['React', 'JavaScript', 'CSS3', 'Payment Gateway'],
+      liveUrl: 'https://www.hoopoe.digital/',
+      kind: 'web',
       imageUrl: '/projects/placeholder-2.png',
     },
     {
-      id: 'project-three',
-      name: 'Project Three',
-      description: 'Placeholder project — replace with a real case study.',
-      techStack: ['React', 'Node.js'],
-      liveUrl: 'https://example.com',
+      id: 'travelm8',
+      name: 'TravelM8 Agency',
+      description:
+        'Feature-rich travel and tourism discovery platform with curated destination itineraries, tour filtering, and structured booking workflows.',
+      techStack: ['React', 'TypeScript', 'Node.js', 'Tailwind CSS'],
+      liveUrl: 'https://github.com/Advanced-computer-lab-2024/TravelM8',
       kind: 'web',
       imageUrl: '/projects/placeholder-3.png',
+    },
+    {
+      id: 'bareq',
+      name: 'Bareq.dev Ecosystem',
+      description:
+        'Full-stack talent platform and cross-platform mobile app with custom dashboards, real-time WebSocket transport, and multi-provider LLM CV ingestion.',
+      techStack: ['Next.js', 'NestJS', 'Expo (React Native)', 'Supabase', 'TypeScript'],
+      liveUrl: 'https://github.com/HamzaElshammaa',
+      kind: 'mobile',
+      imageUrl: '/projects/placeholder-1.png',
+    },
+    {
+      id: 'clinic-portal',
+      name: 'Healthcare Clinic Portal',
+      description:
+        'Patient-centric medical clinic website with online appointment scheduling, doctor profiles, service catalogs, and mobile-optimized access.',
+      techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'PostgreSQL'],
+      liveUrl: 'https://github.com/HamzaElshammaa',
+      kind: 'web',
+      imageUrl: '/projects/placeholder-2.png',
     },
   ],
   workHeading: 'Selected Work',
   about: {
     narrative:
-      'I help clients ship products faster without sacrificing polish — from first pixel to production deploy.',
-    skills: ['React', 'Next.js', 'React Native', 'TypeScript', 'Tailwind CSS'],
+      'I help startups, agencies, and businesses ship fast, high-converting digital products. From consumer-facing web experiences to full-stack platforms and mobile apps, I focus on clean architecture, fluid interfaces, and production reliability.',
+    skills: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Tailwind CSS',
+      'React Native (Expo)',
+      'NestJS',
+      'Node.js',
+      'Supabase / PostgreSQL',
+    ],
   },
   servicesHeading: 'Services',
   services: [
     {
-      title: 'Landing Pages',
-      description: 'Conversion-focused marketing sites built to launch fast.',
+      title: 'Custom Websites & Landing Pages',
+      description:
+        'High-converting, brand-driven marketing sites and digital menus with fluid animations and sub-second load times.',
     },
     {
-      title: 'Web Applications',
-      description: 'Full-featured product interfaces, from MVP to scale.',
+      title: 'Full-Stack Web Applications',
+      description:
+        'End-to-end web platforms with complex dashboards, authentication, REST/WebSocket APIs, and database architecture.',
     },
     {
-      title: 'Mobile Apps',
-      description: 'Cross-platform apps with React Native, shipped to both stores.',
+      title: 'Cross-Platform Mobile Apps',
+      description:
+        'Native-feeling mobile apps for iOS and Android built with Expo and React Native, from MVP to store release.',
     },
   ],
   testimonials: [
     {
-      quote: 'Placeholder testimonial — replace with a real client quote.',
-      name: 'Jane Doe',
-      role: 'Founder, Example Co.',
+      quote:
+        'Hamza delivered a clean, high-performance website with meticulous attention to detail. Fast turnaround and effortless communication.',
+      name: 'Agency Partner',
+      role: 'Digital Director',
     },
     {
-      quote: 'Placeholder testimonial — replace with a real client quote.',
-      name: 'John Smith',
-      role: 'Product Lead, Example Inc.',
+      quote:
+        'From architecture to interface polish, everything felt intuitive, responsive, and rock-solid under real traffic.',
+      name: 'Product Founder',
+      role: 'Startup Lead',
     },
   ],
   contact: {
     email: 'hamzahelshammaa@gmail.com',
-    calendlyUrl: 'https://calendly.com/example',
+    calendlyUrl: 'https://calendly.com/hamzahelshammaa',
     socials: [
-      { label: 'GitHub', url: 'https://github.com/example' },
-      { label: 'LinkedIn', url: 'https://linkedin.com/in/example' },
+      { label: 'GitHub', url: 'https://github.com/HamzaElshammaa' },
+      { label: 'LinkedIn', url: 'https://linkedin.com/in/hamzaelshammaa' },
     ],
   },
 };

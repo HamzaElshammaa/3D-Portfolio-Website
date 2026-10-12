@@ -8,7 +8,7 @@ import { AppleContact } from './Contact';
 
 export function AppleTheme() {
   return (
-    <div className="w-full">
+    <div className="min-h-screen w-full bg-[#000000] text-white antialiased selection:bg-[#0071E3] selection:text-white">
       <AppleNav wordmark={content.site.wordmark} links={content.nav} />
       <AppleHero hero={content.hero} />
       <AppleWork projects={content.projects} heading={content.workHeading} />
