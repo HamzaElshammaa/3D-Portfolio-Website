@@ -104,8 +104,8 @@ export const content: SiteContent = {
       imageUrl: '/projects/placeholder-3.png',
     },
     {
-      id: 'bareq',
-      name: 'Bareq.dev Ecosystem',
+      id: 'talent-matching',
+      name: 'AI Talent & Job Matching Platform',
       description:
         'Full-stack talent platform and cross-platform mobile app with custom dashboards, real-time WebSocket transport, and multi-provider LLM CV ingestion.',
       techStack: ['Next.js', 'NestJS', 'Expo (React Native)', 'Supabase', 'TypeScript'],
